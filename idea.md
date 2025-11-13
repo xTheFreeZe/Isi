@@ -1,12 +1,12 @@
 // ===========================================
-// == Loom Core Spezifikation (Core.loom)
+// == Isi Core Spezifikation (Core.isi)
 // ===========================================
 //
 // Dies ist die Referenz für alle Syntax-Konstrukte
 // und die "primitiven" Funktionen, die in der Host-Sprache
 // (z.B. V, Rust, C++) implementiert werden müssen.
 //
-// 'Loom' ist "Expression-Oriented"; alles ist ein Ausdruck, der
+// 'Isi' ist "Expression-Oriented"; alles ist ein Ausdruck, der
 // einen Wert zurückgibt.
 
 // -------------------------------------------
@@ -121,7 +121,7 @@ math_ops -> [add (minus) (mul)] // Eine Liste von Funktionen
 // ===========================================
 //
 // Dies sind die Funktionen, die Sie in Ihrer Host-Sprache
-// (V, Rust, C++) implementieren müssen. Loom kann ohne sie
+// (V, Rust, C++) implementieren müssen. Isi kann ohne sie
 // nicht existieren.
 
 // --- 6.1 Arithmetik & Vergleiche ---
@@ -180,7 +180,7 @@ math_ops -> [add (minus) (mul)] // Eine Liste von Funktionen
 // --- 6.8 Fehlerbehandlung (Für Striktheit & Robustheit) ---
 //
 // Robuste Sprachen erzwingen eine explizite Fehlerbehandlung.
-// Loom-Funktionen geben *niemals* `null` oder Exceptions zurück.
+// Isi-Funktionen geben *niemals* `null` oder Exceptions zurück.
 // Stattdessen geben sie ein "Result"-Objekt zurück, das
 // per Konvention eine Map ist:
 // Erfolg: {:ok wert}
