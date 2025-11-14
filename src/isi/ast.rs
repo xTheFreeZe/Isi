@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-
 pub enum IsiToken {
     LPAREN,   // (
     RPAREN,   // )
@@ -57,5 +56,8 @@ pub enum IsiValue {
 }
 
 pub struct App {
-    pub program_path: String,
+    pub file_name: String,
+    pub path_to_file: String,
+
+    pub content: String,
 }
