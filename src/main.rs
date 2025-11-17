@@ -1,5 +1,8 @@
 use crate::isi::ast::ast::App;
+use crate::isi::scanner::scanner::scan;
 use std::env;
+use std::fs::File;
+use std::io::Read;
 use std::path::Path;
 
 pub mod isi;
@@ -40,4 +43,29 @@ fn main() {
     app.file_dir = dir.to_string_lossy().into_owned();
 
     println!("File path: {}", app.file_dir);
+    println!("File name: {}", app.file_name);
+
+    let mut file = File::open(&file_path);
+    let mut file_buffer = String::new();
+
+    let bytes_read = match &mut file {
+        Ok(f) => f.read_to_string(&mut file_buffer).unwrap(),
+        Err(_) => {
+            println!(
+                "Could not open file: {} with path: {}",
+                file_name,
+                file_path.display()
+            );
+            return;
+        }
+    };
+
+    if bytes_read == 0 {
+        println!("Nothing to do > File is empty!");
+        return;
+    }
+
+    app.content = file_buffer;
+    let tokens = scan(&app);
+    println!("Acc tokens: {:?}", tokens);
 }

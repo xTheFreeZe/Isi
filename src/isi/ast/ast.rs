@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+
+#[derive(Debug)]
 pub enum IsiToken {
     LPAREN,   // (
     RPAREN,   // )
@@ -11,6 +13,7 @@ pub enum IsiToken {
     LARROW,   // <
     RARROW,   // >
     QUESTION, // ?
+    MINUS,    // -
     ARROW,    // ->
     SQUOTE,   // ''
     DQUOTE,   // ""
