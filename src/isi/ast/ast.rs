@@ -57,7 +57,7 @@ pub enum IsiValue {
 
 pub struct App {
     pub file_name: String,
-    pub path_to_file: String,
+    pub file_dir: String,
 
     pub content: String,
 }
