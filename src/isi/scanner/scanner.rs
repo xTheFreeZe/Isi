@@ -36,9 +36,19 @@ pub fn scan(app: &App) -> Vec<IsiToken> {
             '-' => {
                 tokens.push(IsiToken::MINUS);
                 chars.next();
+
+                if chars.peek().unwrap() == &'>' {
+                    tokens.pop();
+                    tokens.push(IsiToken::ARROW);
+                    chars.next();
+                }
             }
             '>' => {
                 tokens.push(IsiToken::RARROW);
+                chars.next();
+            }
+            '<' => {
+                tokens.push(IsiToken::LARROW);
                 chars.next();
             }
             _ => {
