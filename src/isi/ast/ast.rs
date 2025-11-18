@@ -31,6 +31,14 @@ pub enum IsiToken {
     EOF,
 }
 
+#[derive(Debug)]
+pub struct Token {
+    pub t_value: String,
+    pub t_type: IsiToken,
+    pub t_line: i64,
+    pub t_column: i64,
+}
+
 pub enum IsiValue {
     Integer(i64),
     Float(f64),
@@ -56,6 +64,11 @@ pub enum IsiValue {
         params: Vec<String>,
         body: Box<IsiValue>,
     },
+
+    Variable {
+        v_type: IsiToken,
+        v_value: String,
+    },
 }
 
 pub struct App {
@@ -63,4 +76,9 @@ pub struct App {
     pub file_dir: String,
 
     pub content: String,
+    pub line_count: i64,
+    pub column_count: i64,
+
+    pub tokens: Vec<Token>,
+    pub nodes: Vec<IsiValue>,
 }

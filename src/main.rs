@@ -1,4 +1,5 @@
 use crate::isi::ast::ast::App;
+use crate::isi::parser::parser::parse;
 use crate::isi::scanner::scanner::scan;
 use std::env;
 use std::fs::File;
@@ -12,6 +13,10 @@ fn main() {
         file_name: String::from(""),
         file_dir: String::from(""),
         content: String::from(""),
+        line_count: 1,
+        column_count: 0,
+        tokens: Vec::new(),
+        nodes: Vec::new(),
     };
 
     let mut file_name = String::from("");
@@ -66,6 +71,6 @@ fn main() {
     }
 
     app.content = file_buffer;
-    let tokens = scan(&app);
-    println!("Acc tokens: {:?}", tokens);
+    app.tokens = scan(&mut app);
+    app.nodes = parse(&mut app);
 }
