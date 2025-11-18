@@ -18,7 +18,6 @@ fn main() {
         tokens: Vec::new(),
         nodes: Vec::new(),
     };
-
     let mut file_name = String::from("");
 
     for arg in env::args() {

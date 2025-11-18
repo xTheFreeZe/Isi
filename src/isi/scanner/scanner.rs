@@ -28,7 +28,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
             'a'..='z' => {
                 let mut full_str = String::new();
                 while let Some(&d) = chars.peek() {
-                    if d.is_ascii_alphabetic() {
+                    if d.is_ascii_alphanumeric() || d == '_' {
                         full_str.push(d);
                         chars.next();
                     } else {
