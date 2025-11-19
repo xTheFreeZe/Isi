@@ -15,6 +15,7 @@ fn main() {
         content: String::from(""),
         line_count: 1,
         column_count: 0,
+        index: 0,
         tokens: Vec::new(),
         nodes: Vec::new(),
     };
