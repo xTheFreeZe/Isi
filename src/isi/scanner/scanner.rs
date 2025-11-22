@@ -37,7 +37,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                 }
                 tokens.push(Token {
                     t_value: String::from(&full_str),
-                    t_type: IsiToken::STRING(full_str),
+                    t_type: IsiToken::VARIABLE,
                     t_line: app.line_count,
                     t_column: app.column_count,
                 });
@@ -61,6 +61,15 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                     });
                     chars.next();
                 }
+            }
+            '+' => {
+                tokens.push(Token {
+                    t_value: String::from(c),
+                    t_type: IsiToken::PLUS,
+                    t_line: app.line_count,
+                    t_column: app.column_count,
+                });
+                chars.next();
             }
             '>' => {
                 tokens.push(Token {
@@ -111,6 +120,15 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                 tokens.push(Token {
                     t_value: String::from(c),
                     t_type: IsiToken::RBRACKET,
+                    t_line: app.line_count,
+                    t_column: app.column_count,
+                });
+                chars.next();
+            }
+            ':' => {
+                tokens.push(Token {
+                    t_value: String::from(c),
+                    t_type: IsiToken::COLON,
                     t_line: app.line_count,
                     t_column: app.column_count,
                 });

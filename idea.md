@@ -105,9 +105,9 @@ meine_zahl -> 2
 // Funktionen sind nur Daten. Sie werden mit der Vektor-Syntax `[ ]`
 // für die Parameterliste und einem `( )` Block für den Body erstellt.
 
-// ([param1 param2] (body ...))
+// ([param1: type param2: type] -> return_type (body ...))
 
-add -> ([a b] (plus a b))
+add -> ([a:int b:int] -> int (a +b))
 
 // Verwendung:
 (add 10 20) // -> 30

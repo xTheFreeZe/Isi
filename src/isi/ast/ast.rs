@@ -2,7 +2,7 @@ use std::process::exit;
 
 use crate::isi::utils::utils::print_compile_error;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum IsiToken {
     LPAREN,   // (
     RPAREN,   // )
@@ -16,10 +16,13 @@ pub enum IsiToken {
     RARROW,   // >
     QUESTION, // ?
     MINUS,    // -
+    PLUS,     // +
     ARROW,    // ->
     SQUOTE,   // ''
     DQUOTE,   // ""
+    COLON,    // :
 
+    VARIABLE,
     INTEGER(i64),
     FLOAT(f64),
     STRING(String),
@@ -34,7 +37,7 @@ pub enum IsiToken {
     EMPTY,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub t_value: String,
     pub t_type: IsiToken,
@@ -42,6 +45,7 @@ pub struct Token {
     pub t_column: i64,
 }
 
+#[derive(PartialEq)]
 pub struct Expression {
     pub e_type: IsiToken,
     pub e_value: String,
@@ -56,6 +60,7 @@ impl Default for Expression {
     }
 }
 
+#[derive(PartialEq)]
 pub struct Variable {
     pub v_value: String,
     pub v_expression: Expression,
@@ -70,42 +75,13 @@ impl Default for Variable {
     }
 }
 
+#[derive(PartialEq)]
 pub enum IsiNode {
     IsiExpression(Expression),
     IsiVariable(Variable),
+
+    EmptyNode,
 }
-
-// pub enum IsiValue {
-//     Integer(i64),
-//     Float(f64),
-//     String(String),
-//     Keyword(String),
-//     True,
-//     False,
-//     Nil,
-
-//     // (plus 1 2)
-//     Call(Vec<IsiValue>),
-
-//     // [1 2 3]
-//     Vector(Vec<IsiValue>),
-
-//     //{:a 1}
-//     Map(HashMap<String, IsiValue>),
-
-//     // < (plus 1 2) >
-//     Lazy(Box<IsiValue>),
-
-//     Function {
-//         params: Vec<String>,
-//         body: Box<IsiValue>,
-//     },
-
-//     Variable {
-//         v_type: IsiToken,
-//         v_value: String,
-//     },
-// }
 
 pub struct App {
     pub file_name: String,
@@ -125,13 +101,25 @@ impl App {
         self.index += 1
     }
 
-    pub fn get(&self) -> &Token {
+    pub fn get(&self) -> Token {
         let token = self.tokens.get(self.index);
 
         match token {
-            Some(token) => token,
+            Some(token) => token.clone(),
             None => {
-                print_compile_error(format!("Token index {} out of bounds", self.index));
+                print_compile_error(format!("Unexpected end of file at index: {}", self.index));
+                exit(1);
+            }
+        }
+    }
+
+    pub fn peek_next(&self) -> Token {
+        let token = self.tokens.get(self.index + 1);
+
+        match token {
+            Some(token) => token.clone(),
+            None => {
+                print_compile_error(format!("Unexpected end of file at index: {}", self.index));
                 exit(1);
             }
         }
