@@ -35,12 +35,21 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                         break;
                     }
                 }
-                tokens.push(Token {
-                    t_value: String::from(&full_str),
-                    t_type: IsiToken::VARIABLE,
-                    t_line: app.line_count,
-                    t_column: app.column_count,
-                });
+                if full_str == "int" || full_str == "string" || full_str == "float" {
+                    tokens.push(Token {
+                        t_value: String::from(&full_str),
+                        t_type: IsiToken::KEYWORD(full_str),
+                        t_line: app.line_count,
+                        t_column: app.column_count,
+                    });
+                } else {
+                    tokens.push(Token {
+                        t_value: String::from(&full_str),
+                        t_type: IsiToken::VARIABLE,
+                        t_line: app.line_count,
+                        t_column: app.column_count,
+                    });
+                }
             }
             '-' => {
                 tokens.push(Token {
@@ -54,7 +63,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                 if chars.peek().unwrap() == &'>' {
                     tokens.pop();
                     tokens.push(Token {
-                        t_value: String::from("=>"),
+                        t_value: String::from("->"),
                         t_type: IsiToken::ARROW,
                         t_line: app.line_count,
                         t_column: app.column_count,

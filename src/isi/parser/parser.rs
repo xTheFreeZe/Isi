@@ -2,8 +2,8 @@ use colored::Colorize;
 
 use crate::isi::{
     ast::ast::{
-        App, Expression, IsiNode,
-        IsiToken::{ARROW, LBRACKET, LPAREN, VARIABLE},
+        App, DataType, Function, FunctionParam, IsiNode,
+        IsiToken::{ARROW, COLON, LBRACKET, LPAREN, RBRACKET, VARIABLE},
         Variable,
     },
     utils::utils::print_compile_error,
@@ -38,7 +38,10 @@ fn parse_variable(app: &mut App) -> IsiNode {
 
     token = app.get();
     if token.t_type != ARROW {
-        print_compile_error(format!("Unexpected `{}` > Expected `->`", token.t_value));
+        print_compile_error(format!(
+            "Hit unexpected `{}` in variable > Expected `->`",
+            token.t_value
+        ));
     }
 
     app.next();
@@ -59,6 +62,7 @@ fn parse_variable(app: &mut App) -> IsiNode {
             let next = app.peek_next();
 
             let function_node = if next.t_type == LBRACKET {
+                app.next();
                 parse_function(app)
             } else {
                 // This is a function call
@@ -68,7 +72,7 @@ fn parse_variable(app: &mut App) -> IsiNode {
 
             function_node
         }
-        _ => return IsiNode::EmptyNode,
+        _ => IsiNode::EmptyNode,
     };
 
     if expression == IsiNode::EmptyNode {
@@ -79,10 +83,96 @@ fn parse_variable(app: &mut App) -> IsiNode {
     }
 
     let node = IsiNode::IsiVariable(var);
-    return node;
+    node
 }
 
 fn parse_function(app: &mut App) -> IsiNode {
-    println!("{}", app.tokens.len());
-    return IsiNode::IsiExpression(Expression::default());
+    let mut function = Function::default();
+    // The current token is a LBRACKET `[`, so we are parsing function arguments now
+    app.next();
+    let function_params = parse_function_params(app);
+    function.params = function_params;
+
+    if app.get().t_type != ARROW {
+        print_compile_error(format!(
+            "Unexpected `{}` > Expected `->`",
+            app.get().t_value
+        ));
+    }
+
+    app.next();
+    let return_type = app.get();
+    if !return_type.t_type.is_data_type() {
+        print_compile_error(format!(
+            "Unexpected `{}` with type `{:?}` > Expected data type",
+            return_type.t_value, return_type.t_type
+        ));
+    }
+
+    let function_return_type = match return_type.t_value.as_str() {
+        "int" => DataType::Int,
+        "string" => DataType::String,
+        "float" => DataType::Float,
+
+        //Should never be hit because we already made sure its a datatype keyword
+        _ => DataType::NONE,
+    };
+    function.return_type = function_return_type;
+
+    app.next();
+
+    let msg = "Return type is done, go parse the hecking body";
+    println!("{}", msg.bright_cyan());
+
+    IsiNode::IsiFunction(function)
+}
+
+fn parse_function_params(app: &mut App) -> Vec<FunctionParam> {
+    let mut params = Vec::new();
+
+    while app.get().t_type != RBRACKET {
+        let arg_name = app.get();
+        if arg_name.t_type != VARIABLE {
+            print_compile_error(format!(
+                "Unexpected `{}` with type `{:?}` > Expected function parameter",
+                arg_name.t_value, arg_name.t_type
+            ));
+        }
+
+        app.next();
+        if app.get().t_type != COLON {
+            print_compile_error(format!(
+                "Unexpected `{}` with type `{:?}` > Expected `:`",
+                arg_name.t_value, arg_name.t_type
+            ));
+        }
+
+        app.next();
+        let arg_type = app.get();
+        if !arg_type.t_type.is_data_type() {
+            print_compile_error(format!(
+                "Unexpected `{}` with type `{:?}` > Expected data type",
+                arg_type.t_value, arg_type.t_type
+            ));
+        }
+
+        let data_type = match arg_type.t_value.as_str() {
+            "int" => DataType::Int,
+            "string" => DataType::String,
+            "float" => DataType::Float,
+
+            //Should never be hit because we already made sure its a datatype keyword
+            _ => DataType::NONE,
+        };
+
+        let param = FunctionParam {
+            name: arg_name.t_value,
+            p_type: data_type,
+        };
+        params.push(param);
+        app.next();
+    }
+    // Jump over the `]`
+    app.next();
+    params
 }

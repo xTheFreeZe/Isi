@@ -2,6 +2,8 @@ use std::process::exit;
 
 use crate::isi::utils::utils::print_compile_error;
 
+const DATA_TYPES: &[&str] = &["int", "string"];
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum IsiToken {
     LPAREN,   // (
@@ -24,8 +26,6 @@ pub enum IsiToken {
 
     VARIABLE,
     INTEGER(i64),
-    FLOAT(f64),
-    STRING(String),
     KEYWORD(String),
     TRUE(),
     FALSE,
@@ -35,6 +35,21 @@ pub enum IsiToken {
     WILDCARD,
     EOF,
     EMPTY,
+}
+
+#[derive(PartialEq, Debug)]
+pub enum DataType {
+    Int,
+    Float,
+    String,
+
+    NONE,
+}
+
+impl IsiToken {
+    pub fn is_data_type(&self) -> bool {
+        matches!(self, IsiToken::KEYWORD(s) if DATA_TYPES.contains(&s.as_str()))
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -47,15 +62,17 @@ pub struct Token {
 
 #[derive(PartialEq)]
 pub struct Expression {
-    pub e_type: IsiToken,
+    pub e_type: DataType,
     pub e_value: String,
+    pub e_body: Vec<IsiNode>,
 }
 
 impl Default for Expression {
     fn default() -> Self {
         Expression {
-            e_type: IsiToken::EMPTY,
+            e_type: DataType::NONE,
             e_value: String::new(),
+            e_body: Vec::new(),
         }
     }
 }
@@ -75,10 +92,36 @@ impl Default for Variable {
     }
 }
 
+#[derive(PartialEq, Debug)]
+pub struct FunctionParam {
+    pub name: String,
+    pub p_type: DataType,
+}
+
+#[derive(PartialEq)]
+pub struct Function {
+    pub name: String,
+    pub params: Vec<FunctionParam>,
+    pub return_type: DataType,
+    pub function_body: Vec<IsiNode>,
+}
+
+impl Default for Function {
+    fn default() -> Self {
+        Function {
+            name: String::new(),
+            params: Vec::new(),
+            return_type: DataType::NONE,
+            function_body: Vec::new(),
+        }
+    }
+}
+
 #[derive(PartialEq)]
 pub enum IsiNode {
     IsiExpression(Expression),
     IsiVariable(Variable),
+    IsiFunction(Function),
 
     EmptyNode,
 }
