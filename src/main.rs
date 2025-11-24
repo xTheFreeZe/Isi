@@ -1,10 +1,12 @@
 use crate::isi::ast::ast::App;
 use crate::isi::parser::parser::parse;
 use crate::isi::scanner::scanner::scan;
+use crate::isi::utils::utils::print_compile_error;
 use std::env;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
+use std::process::exit;
 
 pub mod isi;
 
@@ -27,11 +29,14 @@ fn main() {
         }
     }
 
+    if file_name.is_empty() {
+        print_compile_error("No input files".to_string());
+    }
+
     let file_exists = Path::new(&file_name).exists();
 
     if !file_exists {
-        println!("File does not exist");
-        return;
+        print_compile_error("File does not exist".to_string());
     }
 
     app.file_name = String::from(&file_name);
@@ -47,27 +52,23 @@ fn main() {
 
     app.file_dir = dir.to_string_lossy().into_owned();
 
-    println!("File path: {}", app.file_dir);
-    println!("File name: {}", app.file_name);
-
     let mut file = File::open(&file_path);
     let mut file_buffer = String::new();
 
     let bytes_read = match &mut file {
         Ok(f) => f.read_to_string(&mut file_buffer).unwrap(),
         Err(_) => {
-            println!(
+            print_compile_error(format!(
                 "Could not open file: {} with path: {}",
                 file_name,
                 file_path.display()
-            );
-            return;
+            ));
+            exit(1);
         }
     };
 
     if bytes_read == 0 {
-        println!("Nothing to do > File is empty!");
-        return;
+        print_compile_error("File is empty > Nothing to do".to_string());
     }
 
     app.content = file_buffer;

@@ -2,7 +2,7 @@ use colored::Colorize;
 
 use crate::isi::{
     ast::ast::{
-        App, DataType, Function, FunctionParam, IsiNode,
+        App, Function, FunctionParam, IsiNode,
         IsiToken::{ARROW, COLON, LBRACKET, LPAREN, RBRACKET, VARIABLE},
         Variable,
     },
@@ -50,8 +50,8 @@ fn parse_variable(app: &mut App) -> IsiNode {
 
     if !valid_tokens.iter().any(|e| e == &token.t_value) {
         print_compile_error(format!(
-            "Unexpected `{}` > Expected one of these: `{:?}`",
-            &token.t_value, valid_tokens
+            "Unexpected `{}` > Expected either: `(`, `[` or `{{`",
+            &token.t_value,
         ));
     }
 
@@ -109,20 +109,10 @@ fn parse_function(app: &mut App) -> IsiNode {
         ));
     }
 
-    let function_return_type = match return_type.t_value.as_str() {
-        "int" => DataType::Int,
-        "string" => DataType::String,
-        "float" => DataType::Float,
-
-        //Should never be hit because we already made sure its a datatype keyword
-        _ => DataType::NONE,
-    };
+    let function_return_type = return_type.to_data_type();
     function.return_type = function_return_type;
 
     app.next();
-
-    let msg = "Return type is done, go parse the hecking body";
-    println!("{}", msg.bright_cyan());
 
     IsiNode::IsiFunction(function)
 }
@@ -156,15 +146,7 @@ fn parse_function_params(app: &mut App) -> Vec<FunctionParam> {
             ));
         }
 
-        let data_type = match arg_type.t_value.as_str() {
-            "int" => DataType::Int,
-            "string" => DataType::String,
-            "float" => DataType::Float,
-
-            //Should never be hit because we already made sure its a datatype keyword
-            _ => DataType::NONE,
-        };
-
+        let data_type = arg_type.to_data_type();
         let param = FunctionParam {
             name: arg_name.t_value,
             p_type: data_type,

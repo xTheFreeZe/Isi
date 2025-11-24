@@ -60,6 +60,26 @@ pub struct Token {
     pub t_column: i64,
 }
 
+impl Token {
+    pub fn to_data_type(&self) -> DataType {
+        let data_type = match self.t_value.as_str() {
+            "int" => DataType::Int,
+            "string" => DataType::String,
+            "float" => DataType::Float,
+
+            _ => DataType::NONE,
+        };
+
+        if data_type == DataType::NONE {
+            print_compile_error(format!(
+                "Tried to cast `{}` to a data type > Unknown",
+                self.t_value
+            ));
+        }
+        data_type
+    }
+}
+
 #[derive(PartialEq)]
 pub struct Expression {
     pub e_type: DataType,
