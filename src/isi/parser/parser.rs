@@ -36,13 +36,7 @@ fn parse_variable(app: &mut App) -> IsiNode {
     var.v_value = token.t_value.to_string();
     app.next();
 
-    token = app.get();
-    if token.t_type != ARROW {
-        print_compile_error(format!(
-            "Hit unexpected `{}` in variable > Expected `->`",
-            token.t_value
-        ));
-    }
+    app.expect(ARROW);
 
     app.next();
     token = app.get();
@@ -63,7 +57,7 @@ fn parse_variable(app: &mut App) -> IsiNode {
 
             let function_node = if next.t_type == LBRACKET {
                 app.next();
-                parse_function(app)
+                parse_function_head(app)
             } else {
                 // This is a function call
                 println!("{}", "Function calls are not yet implemented".red());
@@ -86,19 +80,14 @@ fn parse_variable(app: &mut App) -> IsiNode {
     node
 }
 
-fn parse_function(app: &mut App) -> IsiNode {
+fn parse_function_head(app: &mut App) -> IsiNode {
     let mut function = Function::default();
     // The current token is a LBRACKET `[`, so we are parsing function arguments now
     app.next();
     let function_params = parse_function_params(app);
     function.params = function_params;
 
-    if app.get().t_type != ARROW {
-        print_compile_error(format!(
-            "Unexpected `{}` > Expected `->`",
-            app.get().t_value
-        ));
-    }
+    app.expect(ARROW);
 
     app.next();
     let return_type = app.get();
@@ -113,6 +102,10 @@ fn parse_function(app: &mut App) -> IsiNode {
     function.return_type = function_return_type;
 
     app.next();
+    app.expect(LPAREN);
+    app.next();
+
+    parse_function_body(app);
 
     IsiNode::IsiFunction(function)
 }
@@ -130,12 +123,7 @@ fn parse_function_params(app: &mut App) -> Vec<FunctionParam> {
         }
 
         app.next();
-        if app.get().t_type != COLON {
-            print_compile_error(format!(
-                "Unexpected `{}` with type `{:?}` > Expected `:`",
-                arg_name.t_value, arg_name.t_type
-            ));
-        }
+        app.expect(COLON);
 
         app.next();
         let arg_type = app.get();
@@ -157,4 +145,11 @@ fn parse_function_params(app: &mut App) -> Vec<FunctionParam> {
     // Jump over the `]`
     app.next();
     params
+}
+
+fn parse_function_body(app: &mut App) -> Vec<IsiNode> {
+    let body = Vec::new();
+    let token = app.get();
+    println!("Hello from body! Current token -> {}", token.t_value);
+    body
 }

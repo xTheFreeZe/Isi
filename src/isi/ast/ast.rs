@@ -50,6 +50,14 @@ impl IsiToken {
     pub fn is_data_type(&self) -> bool {
         matches!(self, IsiToken::KEYWORD(s) if DATA_TYPES.contains(&s.as_str()))
     }
+
+    pub fn as_string(&self) -> &str {
+        return match self {
+            Self::COLON => ":",
+            Self::ARROW => "->",
+            _ => "[placeholder]",
+        };
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -185,6 +193,19 @@ impl App {
                 print_compile_error(format!("Unexpected end of file at index: {}", self.index));
                 exit(1);
             }
+        }
+    }
+
+    /// Throws a compile error of `app.get()` != `expected`
+    pub fn expect(&self, expected: IsiToken) {
+        let token = self.get();
+
+        if token.t_type != expected {
+            print_compile_error(format!(
+                "Unexpected `{}` > Expected `{}`",
+                token.t_value,
+                expected.as_string()
+            ));
         }
     }
 }
