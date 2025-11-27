@@ -1,12 +1,9 @@
 use colored::Colorize;
 
 use crate::isi::{
-    ast::ast::{
-        App, Function, FunctionParam, IsiNode,
-        IsiToken::{ARROW, COLON, LBRACKET, LPAREN, RBRACKET, VARIABLE},
-        Variable,
-    },
-    utils::utils::print_compile_error,
+    ast::ast::{App, Function, FunctionParam, IsiNode, IsiToken::*, Variable},
+    parser::parse_return::parse_return,
+    util::util::print_compile_error,
 };
 
 pub fn parse(app: &mut App) -> Vec<IsiNode> {
@@ -32,7 +29,6 @@ fn parse_variable(app: &mut App) -> IsiNode {
     let mut var = Variable::default();
 
     let mut token = app.get();
-    println!("Got variable with name: {}", &token.t_value);
     var.v_value = token.t_value.to_string();
     app.next();
 
@@ -98,14 +94,15 @@ fn parse_function_head(app: &mut App) -> IsiNode {
         ));
     }
 
-    let function_return_type = return_type.to_data_type();
-    function.return_type = function_return_type;
+    let f_return_type = return_type.to_data_type();
+    function.return_type = f_return_type;
 
     app.next();
-    app.expect(LPAREN);
+    app.expect(LBRACE);
     app.next();
 
-    parse_function_body(app);
+    let f_body = parse_function_body(app);
+    function.function_body = f_body;
 
     IsiNode::IsiFunction(function)
 }
@@ -148,8 +145,25 @@ fn parse_function_params(app: &mut App) -> Vec<FunctionParam> {
 }
 
 fn parse_function_body(app: &mut App) -> Vec<IsiNode> {
-    let body = Vec::new();
+    let mut body = Vec::new();
     let token = app.get();
-    println!("Hello from body! Current token -> {}", token.t_value);
+    match token.t_type {
+        KEYWORD(r) => match r.as_str() {
+            "return" => {
+                let return_stmt = parse_return(app);
+                println!("Got return {:?}", return_stmt);
+                body.push(return_stmt);
+            }
+            _ => {
+                print_compile_error(format!("Unknown keyword `{r}`"));
+            }
+        },
+        _ => {
+            print_compile_error(format!(
+                "Unexpected token: `{}` `{:?}`",
+                token.t_value, token.t_type
+            ));
+        }
+    }
     body
 }

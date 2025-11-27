@@ -107,7 +107,7 @@ meine_zahl -> 2
 
 // ([param1: type param2: type] -> return_type (body ...))
 
-add -> ([a:int b:int] -> int (a +b))
+add -> ([a:int b:int] -> int {return a + b })
 
 // Verwendung:
 (add 10 20) // -> 30

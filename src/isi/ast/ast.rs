@@ -1,6 +1,6 @@
 use std::process::exit;
 
-use crate::isi::utils::utils::print_compile_error;
+use crate::isi::util::util::print_compile_error;
 
 const DATA_TYPES: &[&str] = &["int", "string"];
 
@@ -51,12 +51,32 @@ impl IsiToken {
         matches!(self, IsiToken::KEYWORD(s) if DATA_TYPES.contains(&s.as_str()))
     }
 
-    pub fn as_string(&self) -> &str {
-        return match self {
-            Self::COLON => ":",
-            Self::ARROW => "->",
-            _ => "[placeholder]",
+    pub fn to_data_type(&self) -> DataType {
+        let data_type = match self {
+            Self::INTEGER(_) => DataType::Int,
+            _ => DataType::NONE,
         };
+
+        if data_type == DataType::NONE {
+            print_compile_error(format!(
+                "Tried to cast `{:?}` to a data type > Unknown",
+                self
+            ));
+        }
+
+        data_type
+    }
+
+    pub fn string_value(&self) -> String {
+        match self {
+            Self::COLON => ":".to_string(),
+            Self::ARROW => "->".to_string(),
+            Self::LPAREN => "(".to_string(),
+            Self::RPAREN => ")".to_string(),
+            Self::LBRACKET => "[".to_string(),
+            Self::RBRACKET => "]".to_string(),
+            _ => format!("{:?}", self),
+        }
     }
 }
 
@@ -88,8 +108,9 @@ impl Token {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct Expression {
+    pub e_length: u64,
     pub e_type: DataType,
     pub e_value: String,
     pub e_body: Vec<IsiNode>,
@@ -98,6 +119,7 @@ pub struct Expression {
 impl Default for Expression {
     fn default() -> Self {
         Expression {
+            e_length: 0,
             e_type: DataType::NONE,
             e_value: String::new(),
             e_body: Vec::new(),
@@ -105,7 +127,7 @@ impl Default for Expression {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct Variable {
     pub v_value: String,
     pub v_expression: Expression,
@@ -126,7 +148,7 @@ pub struct FunctionParam {
     pub p_type: DataType,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct Function {
     pub name: String,
     pub params: Vec<FunctionParam>,
@@ -145,11 +167,25 @@ impl Default for Function {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
+pub struct Return {
+    pub r_value: Expression,
+}
+
+impl Default for Return {
+    fn default() -> Self {
+        Return {
+            r_value: Expression::default(),
+        }
+    }
+}
+
+#[derive(PartialEq, Debug)]
 pub enum IsiNode {
     IsiExpression(Expression),
     IsiVariable(Variable),
     IsiFunction(Function),
+    IsiReturn(Return),
 
     EmptyNode,
 }
@@ -204,7 +240,7 @@ impl App {
             print_compile_error(format!(
                 "Unexpected `{}` > Expected `{}`",
                 token.t_value,
-                expected.as_string()
+                expected.string_value()
             ));
         }
     }

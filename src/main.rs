@@ -1,7 +1,7 @@
 use crate::isi::ast::ast::App;
 use crate::isi::parser::parser::parse;
 use crate::isi::scanner::scanner::scan;
-use crate::isi::utils::utils::print_compile_error;
+use crate::isi::util::util::print_compile_error;
 use std::env;
 use std::fs::File;
 use std::io::Read;
@@ -16,7 +16,7 @@ fn main() {
         file_dir: String::from(""),
         content: String::from(""),
         line_count: 1,
-        column_count: 0,
+        column_count: 1,
         index: 0,
         tokens: Vec::new(),
         nodes: Vec::new(),
