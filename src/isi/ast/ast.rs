@@ -84,8 +84,8 @@ impl IsiToken {
 pub struct Token {
     pub t_value: String,
     pub t_type: IsiToken,
-    pub t_line: i64,
-    pub t_column: i64,
+    pub t_line: u64,
+    pub t_column: u64,
 }
 
 impl Token {
@@ -195,8 +195,8 @@ pub struct App {
     pub file_dir: String,
 
     pub content: String,
-    pub line_count: i64,
-    pub column_count: i64,
+    pub line_count: u64,
+    pub column_count: u64,
 
     pub index: usize,
     pub tokens: Vec<Token>,

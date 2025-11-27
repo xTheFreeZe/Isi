@@ -14,13 +14,14 @@ pub fn parse(app: &mut App) -> Vec<IsiNode> {
 
         match token.t_type {
             VARIABLE => {
+                println!("{}", token.t_value);
                 let node = parse_variable(app);
                 app.nodes.push(node);
             }
-            _ => {}
+            _ => {
+                print_compile_error(format!("Unexpected top level token `{}`", token.t_value));
+            }
         }
-
-        app.next();
     }
     return all_nodes;
 }
@@ -53,7 +54,7 @@ fn parse_variable(app: &mut App) -> IsiNode {
 
             let function_node = if next.t_type == LBRACKET {
                 app.next();
-                parse_function_head(app)
+                parse_function(app)
             } else {
                 // This is a function call
                 println!("{}", "Function calls are not yet implemented".red());
@@ -76,7 +77,7 @@ fn parse_variable(app: &mut App) -> IsiNode {
     node
 }
 
-fn parse_function_head(app: &mut App) -> IsiNode {
+fn parse_function(app: &mut App) -> IsiNode {
     let mut function = Function::default();
     // The current token is a LBRACKET `[`, so we are parsing function arguments now
     app.next();
@@ -103,6 +104,9 @@ fn parse_function_head(app: &mut App) -> IsiNode {
 
     let f_body = parse_function_body(app);
     function.function_body = f_body;
+
+    app.expect(RPAREN);
+    app.next();
 
     IsiNode::IsiFunction(function)
 }
@@ -146,24 +150,28 @@ fn parse_function_params(app: &mut App) -> Vec<FunctionParam> {
 
 fn parse_function_body(app: &mut App) -> Vec<IsiNode> {
     let mut body = Vec::new();
-    let token = app.get();
-    match token.t_type {
-        KEYWORD(r) => match r.as_str() {
-            "return" => {
-                let return_stmt = parse_return(app);
-                println!("Got return {:?}", return_stmt);
-                body.push(return_stmt);
-            }
+    while app.get().t_type != RBRACE {
+        let token = app.get();
+        match token.t_type {
+            KEYWORD(r) => match r.as_str() {
+                "return" => {
+                    let return_stmt = parse_return(app);
+                    body.push(return_stmt);
+                }
+                _ => {
+                    print_compile_error(format!("Unknown keyword `{r}`"));
+                }
+            },
             _ => {
-                print_compile_error(format!("Unknown keyword `{r}`"));
+                print_compile_error(format!(
+                    "Unexpected token: `{}` with type `{:?}`",
+                    token.t_value, token.t_type
+                ));
             }
-        },
-        _ => {
-            print_compile_error(format!(
-                "Unexpected token: `{}` `{:?}`",
-                token.t_value, token.t_type
-            ));
         }
+        app.next();
     }
+    // Go over the `}`
+    app.next();
     body
 }
