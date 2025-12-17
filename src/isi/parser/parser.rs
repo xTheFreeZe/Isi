@@ -1,20 +1,15 @@
-use colored::Colorize;
-
 use crate::isi::{
     ast::ast::{App, Function, FunctionParam, IsiNode, IsiToken::*, Variable},
-    parser::parse_return::parse_return,
+    parser::{expression::parse_single_expression, parse_return::parse_return},
     util::util::print_compile_error,
 };
 
-pub fn parse(app: &mut App) -> Vec<IsiNode> {
-    let all_nodes: Vec<IsiNode> = Vec::new();
-
+pub fn parse(app: &mut App) {
     while app.index < app.tokens.len() {
         let token = app.get();
 
         match token.t_type {
             VARIABLE => {
-                println!("{}", token.t_value);
                 let node = parse_variable(app);
                 app.nodes.push(node);
             }
@@ -23,14 +18,13 @@ pub fn parse(app: &mut App) -> Vec<IsiNode> {
             }
         }
     }
-    return all_nodes;
 }
 
 fn parse_variable(app: &mut App) -> IsiNode {
     let mut var = Variable::default();
 
     let mut token = app.get();
-    var.v_value = token.t_value.to_string();
+    var.v_name = token.t_value.to_string();
     app.next();
 
     app.expect(ARROW);
@@ -39,14 +33,19 @@ fn parse_variable(app: &mut App) -> IsiNode {
     token = app.get();
     let valid_tokens = ["(", "[", "{"];
 
-    if !valid_tokens.iter().any(|e| e == &token.t_value) {
+    // Checks if the token after -> is one of the bracktes above, a number, or a function call
+    // TODO: Needs to also match Variables
+    if !valid_tokens.iter().any(|e| e == &token.t_value)
+        && !matches!(token.t_type, INTEGER(_))
+        && token.t_type != CALL
+    {
         print_compile_error(format!(
             "Unexpected `{}` > Expected either: `(`, `[` or `{{`",
             &token.t_value,
         ));
     }
 
-    let ttype = token.t_type;
+    let ttype = &token.t_type;
 
     let expression: IsiNode = match ttype {
         LPAREN => {
@@ -56,12 +55,17 @@ fn parse_variable(app: &mut App) -> IsiNode {
                 app.next();
                 parse_function(app)
             } else {
-                // This is a function call
-                println!("{}", "Function calls are not yet implemented".red());
                 IsiNode::EmptyNode
             };
 
             function_node
+        }
+        // x -> 10
+        // This arm is used when you assign a variable a number
+        INTEGER(_) => {
+            let parsed_int_expression = parse_single_expression(&token);
+            app.next();
+            IsiNode::IsiExpression(parsed_int_expression)
         }
         _ => IsiNode::EmptyNode,
     };
@@ -73,8 +77,8 @@ fn parse_variable(app: &mut App) -> IsiNode {
         ));
     }
 
-    let node = IsiNode::IsiVariable(var);
-    node
+    var.v_node = Box::new(expression);
+    IsiNode::IsiVariable(var)
 }
 
 fn parse_function(app: &mut App) -> IsiNode {
@@ -84,7 +88,7 @@ fn parse_function(app: &mut App) -> IsiNode {
     let function_params = parse_function_params(app);
     function.params = function_params;
 
-    app.expect(ARROW);
+    app.expect(COLON);
 
     app.next();
     let return_type = app.get();

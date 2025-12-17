@@ -73,5 +73,9 @@ fn main() {
 
     app.content = file_buffer;
     app.tokens = scan(&mut app);
-    app.nodes = parse(&mut app);
+    parse(&mut app);
+
+    // for node in app.nodes {
+    //     println!("{:?}", node);
+    // }
 }

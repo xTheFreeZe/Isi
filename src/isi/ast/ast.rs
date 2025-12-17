@@ -31,7 +31,7 @@ pub enum IsiToken {
     FALSE,
     NIL,
 
-    IDENTIFIER(String),
+    CALL, // Function calls. For Variables which are followed by a `(`
     WILDCARD,
     EOF,
     EMPTY,
@@ -129,15 +129,15 @@ impl Default for Expression {
 
 #[derive(PartialEq, Debug)]
 pub struct Variable {
-    pub v_value: String,
-    pub v_expression: Expression,
+    pub v_name: String,
+    pub v_node: Box<IsiNode>,
 }
 
 impl Default for Variable {
     fn default() -> Self {
         Variable {
-            v_value: String::new(),
-            v_expression: Expression::default(),
+            v_name: String::new(),
+            v_node: Box::new(IsiNode::EmptyNode),
         }
     }
 }
@@ -150,7 +150,6 @@ pub struct FunctionParam {
 
 #[derive(PartialEq, Debug)]
 pub struct Function {
-    pub name: String,
     pub params: Vec<FunctionParam>,
     pub return_type: DataType,
     pub function_body: Vec<IsiNode>,
@@ -159,7 +158,6 @@ pub struct Function {
 impl Default for Function {
     fn default() -> Self {
         Function {
-            name: String::new(),
             params: Vec::new(),
             return_type: DataType::NONE,
             function_body: Vec::new(),

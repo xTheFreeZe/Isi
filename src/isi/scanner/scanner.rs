@@ -54,6 +54,12 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                         t_type: IsiToken::KEYWORD(full_str),
                         ..default_token(app)
                     });
+                } else if chars.peek().unwrap() == &'(' {
+                    tokens.push(Token {
+                        t_value: String::from(&full_str),
+                        t_type: IsiToken::CALL,
+                        ..default_token(app)
+                    });
                 } else {
                     tokens.push(Token {
                         t_value: String::from(&full_str),
