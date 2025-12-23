@@ -1,8 +1,5 @@
-use std::process::exit;
-
 use crate::isi::util::util::print_compile_error;
-
-const DATA_TYPES: &[&str] = &["int", "string"];
+use std::process::exit;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum IsiToken {
@@ -48,13 +45,10 @@ pub enum DataType {
 }
 
 impl IsiToken {
-    pub fn is_data_type(&self) -> bool {
-        todo!("Still need to implement data type conversion")
-    }
-
     pub fn to_data_type(&self) -> DataType {
         let data_type = match self {
             Self::INTEGER => DataType::Int,
+            Self::STRING => DataType::String,
             _ => DataType::NONE,
         };
 
@@ -90,6 +84,14 @@ pub struct Token {
 }
 
 impl Token {
+    pub fn is_data_type(&self) -> bool {
+        match self.t_value.as_str() {
+            "int" => true,
+            "string" => true,
+            _ => false,
+        }
+    }
+
     pub fn to_data_type(&self) -> DataType {
         let data_type = match self.t_value.as_str() {
             "int" => DataType::Int,

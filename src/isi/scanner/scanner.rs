@@ -182,7 +182,6 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                 }
                 // Consume the closing "
                 chars.next();
-                println!("Pushed String with value: {}", full_str);
                 tokens.push(Token {
                     t_value: full_str,
                     t_type: IsiToken::STRING,

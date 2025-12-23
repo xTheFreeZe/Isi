@@ -37,6 +37,7 @@ fn parse_variable(app: &mut App) -> IsiNode {
     // TODO: Needs to also match Variables
     if !valid_tokens.iter().any(|e| e == &token.t_value)
         && !matches!(token.t_type, INTEGER)
+        && !matches!(token.t_type, STRING)
         && token.t_type != CALL
     {
         print_compile_error(format!(
@@ -51,7 +52,9 @@ fn parse_variable(app: &mut App) -> IsiNode {
         LPAREN => {
             let next = app.peek_next();
 
-            let function_node = if next.t_type == LBRACKET {
+            // If no function params are needed, you can omit the [...] and continue with :{return_type}
+            // main -> ([] :int) turns into main -> ( :int )
+            let function_node = if next.t_type == LBRACKET || next.t_type == COLON {
                 app.next();
                 parse_function(app)
             } else {
@@ -66,6 +69,11 @@ fn parse_variable(app: &mut App) -> IsiNode {
             let parsed_int_expression = parse_single_expression(&token);
             app.next();
             IsiNode::IsiExpression(parsed_int_expression)
+        }
+        STRING => {
+            let parsed_string_expression = parse_single_expression(&token);
+            app.next();
+            IsiNode::IsiExpression(parsed_string_expression)
         }
         _ => IsiNode::EmptyNode,
     };
@@ -83,16 +91,19 @@ fn parse_variable(app: &mut App) -> IsiNode {
 
 fn parse_function(app: &mut App) -> IsiNode {
     let mut function = Function::default();
-    // The current token is a LBRACKET `[`, so we are parsing function arguments now
-    app.next();
-    let function_params = parse_function_params(app);
-    function.params = function_params;
+
+    // This check is necessary because the [...] might have been omitted
+    if app.get().t_type == LBRACKET {
+        // Consume the [ and go the first param name
+        app.next();
+        let function_params = parse_function_params(app);
+        function.params = function_params;
+    }
 
     app.expect(COLON);
-
     app.next();
     let return_type = app.get();
-    if !return_type.t_type.is_data_type() {
+    if !return_type.is_data_type() {
         print_compile_error(format!(
             "Unexpected `{}` with type `{:?}` > Expected data type",
             return_type.t_value, return_type.t_type
@@ -118,6 +129,11 @@ fn parse_function(app: &mut App) -> IsiNode {
 fn parse_function_params(app: &mut App) -> Vec<FunctionParam> {
     let mut params = Vec::new();
 
+    if app.get().t_type == RBRACKET {
+        app.next();
+        return params;
+    }
+
     while app.get().t_type != RBRACKET {
         let arg_name = app.get();
         if arg_name.t_type != VARIABLE {
@@ -132,7 +148,7 @@ fn parse_function_params(app: &mut App) -> Vec<FunctionParam> {
 
         app.next();
         let arg_type = app.get();
-        if !arg_type.t_type.is_data_type() {
+        if !arg_type.is_data_type() {
             print_compile_error(format!(
                 "Unexpected `{}` with type `{:?}` > Expected data type",
                 arg_type.t_value, arg_type.t_type
