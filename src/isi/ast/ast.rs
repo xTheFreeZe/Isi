@@ -25,8 +25,9 @@ pub enum IsiToken {
     COLON,    // :
 
     VARIABLE,
-    INTEGER(i64),
-    KEYWORD(String),
+    INTEGER,
+    KEYWORD,
+    STRING,
     TRUE(),
     FALSE,
     NIL,
@@ -48,12 +49,12 @@ pub enum DataType {
 
 impl IsiToken {
     pub fn is_data_type(&self) -> bool {
-        matches!(self, IsiToken::KEYWORD(s) if DATA_TYPES.contains(&s.as_str()))
+        todo!("Still need to implement data type conversion")
     }
 
     pub fn to_data_type(&self) -> DataType {
         let data_type = match self {
-            Self::INTEGER(_) => DataType::Int,
+            Self::INTEGER => DataType::Int,
             _ => DataType::NONE,
         };
 

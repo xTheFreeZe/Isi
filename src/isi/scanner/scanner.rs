@@ -29,10 +29,9 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                     }
                 }
                 app.column_count -= 1;
-                let full_number_as_number: i64 = full_number.parse().unwrap();
                 tokens.push(Token {
                     t_value: full_number,
-                    t_type: IsiToken::INTEGER(full_number_as_number),
+                    t_type: IsiToken::INTEGER,
                     ..default_token(app)
                 });
             }
@@ -48,12 +47,14 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                     }
                 }
                 app.column_count -= 1;
+                // Keyword
                 if keywords.contains(&full_str.as_str()) {
                     tokens.push(Token {
                         t_value: String::from(&full_str),
-                        t_type: IsiToken::KEYWORD(full_str),
+                        t_type: IsiToken::KEYWORD,
                         ..default_token(app)
                     });
+                // x( -> Call
                 } else if chars.peek().unwrap() == &'(' {
                     tokens.push(Token {
                         t_value: String::from(&full_str),
@@ -165,6 +166,28 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                     ..default_token(app)
                 });
                 chars.next();
+            }
+            '"' => {
+                let mut full_str = String::new();
+                chars.next();
+                while let Some(&d) = chars.peek() {
+                    // TODO: How to check if there is no closing " ? Currently just runs until file end
+                    if d != '"' {
+                        app.column_count += 1;
+                        full_str.push(d);
+                        chars.next();
+                    } else {
+                        break;
+                    }
+                }
+                // Consume the closing "
+                chars.next();
+                println!("Pushed String with value: {}", full_str);
+                tokens.push(Token {
+                    t_value: full_str,
+                    t_type: IsiToken::STRING,
+                    ..default_token(app)
+                });
             }
             _ => {
                 if c.is_whitespace() || c == '\r' {

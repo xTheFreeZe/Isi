@@ -36,7 +36,7 @@ fn parse_variable(app: &mut App) -> IsiNode {
     // Checks if the token after -> is one of the bracktes above, a number, or a function call
     // TODO: Needs to also match Variables
     if !valid_tokens.iter().any(|e| e == &token.t_value)
-        && !matches!(token.t_type, INTEGER(_))
+        && !matches!(token.t_type, INTEGER)
         && token.t_type != CALL
     {
         print_compile_error(format!(
@@ -62,7 +62,7 @@ fn parse_variable(app: &mut App) -> IsiNode {
         }
         // x -> 10
         // This arm is used when you assign a variable a number
-        INTEGER(_) => {
+        INTEGER => {
             let parsed_int_expression = parse_single_expression(&token);
             app.next();
             IsiNode::IsiExpression(parsed_int_expression)
@@ -157,13 +157,13 @@ fn parse_function_body(app: &mut App) -> Vec<IsiNode> {
     while app.get().t_type != RBRACE {
         let token = app.get();
         match token.t_type {
-            KEYWORD(r) => match r.as_str() {
+            KEYWORD => match token.t_value.as_str() {
                 "return" => {
                     let return_stmt = parse_return(app);
                     body.push(return_stmt);
                 }
                 _ => {
-                    print_compile_error(format!("Unknown keyword `{r}`"));
+                    print_compile_error(format!("Unknown keyword `{}`", token.t_value));
                 }
             },
             _ => {
