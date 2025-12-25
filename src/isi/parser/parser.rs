@@ -1,6 +1,6 @@
 use crate::isi::{
     ast::ast::{App, Function, FunctionParam, IsiNode, IsiToken::*, Variable},
-    parser::{expression::parse_single_expression, parse_return::parse_return},
+    parser::expression::{get_expression, parse_expression, parse_single_expression},
     util::util::print_compile_error,
 };
 
@@ -33,7 +33,7 @@ fn parse_variable(app: &mut App) -> IsiNode {
     token = app.get();
     let valid_tokens = ["(", "[", "{"];
 
-    // Checks if the token after -> is one of the bracktes above, a number, or a function call
+    // Checks if the token after -> is one of the bracktes above, a number, a string or a function call
     // TODO: Needs to also match Variables
     if !valid_tokens.iter().any(|e| e == &token.t_value)
         && !matches!(token.t_type, INTEGER)
@@ -97,7 +97,7 @@ fn parse_function(app: &mut App) -> IsiNode {
         // Consume the [ and go the first param name
         app.next();
         let function_params = parse_function_params(app);
-        function.params = function_params;
+        function.params = Some(function_params);
     }
 
     app.expect(COLON);
@@ -117,8 +117,13 @@ fn parse_function(app: &mut App) -> IsiNode {
     app.expect(LBRACE);
     app.next();
 
+    // Empty function
+    if app.get().t_type == RBRACE {
+        app.next();
+    }
+
     let f_body = parse_function_body(app);
-    function.function_body = f_body;
+    function.function_body = Some(f_body);
 
     app.expect(RPAREN);
     app.next();
@@ -169,28 +174,32 @@ fn parse_function_params(app: &mut App) -> Vec<FunctionParam> {
 }
 
 fn parse_function_body(app: &mut App) -> Vec<IsiNode> {
-    let mut body = Vec::new();
+    let mut body: Vec<IsiNode> = Vec::new();
     while app.get().t_type != RBRACE {
         let token = app.get();
         match token.t_type {
             KEYWORD => match token.t_value.as_str() {
-                "return" => {
-                    let return_stmt = parse_return(app);
-                    body.push(return_stmt);
-                }
                 _ => {
                     print_compile_error(format!("Unknown keyword `{}`", token.t_value));
                 }
             },
+            INTEGER => {
+                let expression = get_expression(app);
+                let int_expression = parse_expression(&expression.0);
+                body.push(IsiNode::IsiExpression(int_expression));
+
+                // Set the index of the parser to the end of the parsed expression
+                app.index = expression.1;
+            }
             _ => {
                 print_compile_error(format!(
-                    "Unexpected token: `{}` with type `{:?}`",
+                    "Unexpected token: `{}` with type `{:?}` in function body",
                     token.t_value, token.t_type
                 ));
             }
         }
-        app.next();
     }
+    app.expect(RBRACE);
     // Go over the `}`
     app.next();
     body

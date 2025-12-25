@@ -13,3 +13,7 @@ function -> ([name: string] :int {
 functionWithNoParams -> ( :int {
 })
 ```
+
+main -> ( :void  {
+  (print "Hallo")
+})

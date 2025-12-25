@@ -12,7 +12,7 @@ fn default_token(app: &App) -> Token {
 }
 
 pub fn scan(app: &mut App) -> Vec<Token> {
-    let keywords: Vec<&str> = vec!["return", "int", "string", "float"];
+    let keywords: Vec<&str> = vec!["int", "string", "float"];
     let mut tokens: Vec<Token> = Vec::new();
     let mut chars = app.content.chars().peekable();
     while let Some(&c) = chars.peek() {

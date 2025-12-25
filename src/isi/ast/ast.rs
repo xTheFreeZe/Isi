@@ -16,6 +16,8 @@ pub enum IsiToken {
     QUESTION, // ?
     MINUS,    // -
     PLUS,     // +
+    STAR,     // *
+    SLASH,    // /
     ARROW,    // ->
     SQUOTE,   // ''
     DQUOTE,   // ""
@@ -113,10 +115,10 @@ impl Token {
 
 #[derive(PartialEq, Debug)]
 pub struct Expression {
-    pub e_length: u64,
+    pub e_length: usize,
     pub e_type: DataType,
     pub e_value: String,
-    pub e_body: Vec<IsiNode>,
+    pub e_body: Option<Vec<IsiNode>>,
 }
 
 impl Default for Expression {
@@ -125,7 +127,7 @@ impl Default for Expression {
             e_length: 0,
             e_type: DataType::NONE,
             e_value: String::new(),
-            e_body: Vec::new(),
+            e_body: None,
         }
     }
 }
@@ -153,30 +155,17 @@ pub struct FunctionParam {
 
 #[derive(PartialEq, Debug)]
 pub struct Function {
-    pub params: Vec<FunctionParam>,
+    pub params: Option<Vec<FunctionParam>>,
     pub return_type: DataType,
-    pub function_body: Vec<IsiNode>,
+    pub function_body: Option<Vec<IsiNode>>,
 }
 
 impl Default for Function {
     fn default() -> Self {
         Function {
-            params: Vec::new(),
+            params: None,
             return_type: DataType::NONE,
-            function_body: Vec::new(),
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
-pub struct Return {
-    pub r_value: Expression,
-}
-
-impl Default for Return {
-    fn default() -> Self {
-        Return {
-            r_value: Expression::default(),
+            function_body: None,
         }
     }
 }
@@ -186,7 +175,6 @@ pub enum IsiNode {
     IsiExpression(Expression),
     IsiVariable(Variable),
     IsiFunction(Function),
-    IsiReturn(Return),
 
     EmptyNode,
 }

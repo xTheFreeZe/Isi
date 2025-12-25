@@ -79,7 +79,7 @@ fn main() {
 
     println!("{}", "Done".bright_blue());
 
-    // for node in app.nodes {
-    //     println!("{:?}", node);
-    // }
+    for node in app.nodes {
+        println!("{:?}", node);
+    }
 }
