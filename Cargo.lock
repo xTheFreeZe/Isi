@@ -7,6 +7,7 @@ name = "Isi"
 version = "0.1.0"
 dependencies = [
  "colored",
+ "prejsx_math",
 ]
 
 [[package]]
@@ -17,6 +18,12 @@ checksum = "fde0e0ec90c9dfb3b4b1a0891a7dcd0e2bffde2f7efed5fe7c9bb00e5bfb915e"
 dependencies = [
  "windows-sys",
 ]
+
+[[package]]
+name = "prejsx_math"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "76c9759be926ebc070ddd1905515a47f5625033575339a1a9767ef101f3f6e04"
 
 [[package]]
 name = "windows-sys"

@@ -2,6 +2,8 @@ use crate::isi::{
     ast::ast::{App, DataType, Expression, IsiToken, Token},
     util::util::print_compile_error,
 };
+use colored::Colorize;
+use prejsx_math::eval_math;
 
 /// Gatheres the expression from the index **to the end of the line**
 ///
@@ -35,13 +37,26 @@ pub fn get_expression(app: &mut App) -> (Vec<Token>, usize) {
 pub fn parse_expression(expression: &[Token]) -> Expression {
     // If it is in fact a simple math expression, we can return early,
     // as we already know the type and value
-    if is_simple_algebra_expression(expression) && is_valid_math_expression(into_str(expression)) {
-        return Expression {
-            e_length: expression.len(),
-            e_type: DataType::Int,
-            e_value: into_str(expression),
-            e_body: None,
-        };
+    if is_simple_algebra_expression(expression) {
+        let string_expression = into_str(expression);
+        if let Some(eval_result) = eval_simple_math_expression(&string_expression) {
+            let debug_msg = format!(
+                "`{}` got evaluated to `{}`",
+                &string_expression, &eval_result
+            );
+            println!("{}", debug_msg.bright_black());
+            return Expression {
+                e_length: expression.len(),
+                e_type: DataType::Int,
+                e_value: eval_result,
+                e_body: None,
+            };
+        } else {
+            print_compile_error(format!(
+                "`{}` is not a valid math expression",
+                string_expression
+            ));
+        }
     }
     let parsed_expression = Expression::default();
     parsed_expression
@@ -84,6 +99,13 @@ fn into_str(expression: &[Token]) -> String {
     expression.iter().map(|e| e.t_value.as_str()).collect()
 }
 
-fn is_valid_math_expression(_expression: String) -> bool {
-    todo!("Validate that expression is a valid math expression")
+/// This function uses the `prejsx_math` crate to eval math expressions for the compiler
+///
+/// It returns said expression or None, in case of an invalid expression
+fn eval_simple_math_expression(expression: &str) -> Option<String> {
+    if let Ok(e) = eval_math(expression) {
+        Some(e.to_string())
+    } else {
+        None
+    }
 }
