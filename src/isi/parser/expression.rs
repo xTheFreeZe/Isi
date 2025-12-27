@@ -1,5 +1,5 @@
 use crate::isi::{
-    ast::ast::{App, DataType, Expression, IsiToken, Token},
+    ast::ast::{App, DataType, Expression, IsiToken::*, Token},
     util::util::print_compile_error,
 };
 use colored::Colorize;
@@ -58,7 +58,31 @@ pub fn parse_expression(expression: &[Token]) -> Expression {
             ));
         }
     }
-    let parsed_expression = Expression::default();
+
+    let mut parsed_expression = Expression::default();
+    for (index, piece) in expression.iter().enumerate() {
+        let next_token = expression.get(index + 1);
+        let next_does_exist = next_token.is_some();
+        match &piece.t_type {
+            STRING => {
+                // TODO: Find a better way without cloning
+                parsed_expression.e_value = piece.t_value.clone();
+                parsed_expression.e_type = piece.t_type.to_data_type();
+                parsed_expression.e_length += 1;
+            }
+            _ => {
+                print_compile_error(format!(
+                    "Unknown token type in expression parser: `{:?}` \nStopped on value: `{}`",
+                    piece.t_type, piece.t_value
+                ));
+            }
+        }
+        // We've reached the last piece of the expression
+        if !next_does_exist {
+            break;
+        }
+    }
+
     parsed_expression
 }
 
@@ -81,13 +105,7 @@ fn is_simple_algebra_expression(expression: &[Token]) -> bool {
     expression.iter().all(|e| {
         matches!(
             e.t_type,
-            IsiToken::INTEGER
-                | IsiToken::PLUS
-                | IsiToken::MINUS
-                | IsiToken::STAR
-                | IsiToken::SLASH
-                | IsiToken::LPAREN
-                | IsiToken::RPAREN
+            INTEGER | PLUS | MINUS | STAR | SLASH | LPAREN | RPAREN
         )
     })
 }

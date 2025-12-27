@@ -86,6 +86,9 @@ pub struct Token {
 }
 
 impl Token {
+    /// Checks of the `token value` is a data type
+    ///
+    /// "int" or "string" for example
     pub fn is_data_type(&self) -> bool {
         match self.t_value.as_str() {
             "int" => true,
@@ -94,6 +97,7 @@ impl Token {
         }
     }
 
+    /// Returns a [`DataType`] by matching on the value of the token
     pub fn to_data_type(&self) -> DataType {
         let data_type = match self.t_value.as_str() {
             "int" => DataType::Int,

@@ -191,6 +191,13 @@ fn parse_function_body(app: &mut App) -> Vec<IsiNode> {
                 // Set the index of the parser to the end of the parsed expression
                 app.index = expression.1;
             }
+            STRING => {
+                let expression = get_expression(app);
+                let string_expression = parse_expression(&expression.0);
+                body.push(IsiNode::IsiExpression(string_expression));
+
+                app.index = expression.1;
+            }
             _ => {
                 print_compile_error(format!(
                     "Unexpected token: `{}` with type `{:?}` in function body",
