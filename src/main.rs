@@ -25,7 +25,13 @@ fn main() {
     };
     let mut file_name = String::from("");
 
-    for arg in env::args() {
+    let args = env::args();
+
+    if args.len() == 0 {
+        print_compile_error("No input files".to_string());
+    }
+
+    for arg in args {
         if arg.contains(".isi") {
             file_name = arg
         }

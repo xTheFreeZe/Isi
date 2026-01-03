@@ -1,5 +1,5 @@
 use crate::isi::{
-    ast::ast::{App, DataType, Expression, IsiToken::*, Token},
+    ast::ast::{App, DataType, Expression, IsiToken, Token},
     util::util::print_compile_error,
 };
 use colored::Colorize;
@@ -64,7 +64,7 @@ pub fn parse_expression(expression: &[Token]) -> Expression {
         let next_token = expression.get(index + 1);
         let next_does_exist = next_token.is_some();
         match &piece.t_type {
-            STRING => {
+            IsiToken::STRING => {
                 // TODO: Find a better way without cloning
                 parsed_expression.e_value = piece.t_value.clone();
                 parsed_expression.e_type = piece.t_type.to_data_type();
@@ -105,7 +105,13 @@ fn is_simple_algebra_expression(expression: &[Token]) -> bool {
     expression.iter().all(|e| {
         matches!(
             e.t_type,
-            INTEGER | PLUS | MINUS | STAR | SLASH | LPAREN | RPAREN
+            IsiToken::INTEGER
+                | IsiToken::PLUS
+                | IsiToken::MINUS
+                | IsiToken::STAR
+                | IsiToken::SLASH
+                | IsiToken::LPAREN
+                | IsiToken::RPAREN
         )
     })
 }
