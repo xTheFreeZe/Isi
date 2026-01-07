@@ -28,7 +28,7 @@ fn main() {
     let args = env::args();
 
     if args.len() == 0 {
-        print_compile_error("No input files".to_string());
+        print_compile_error("No input files");
     }
 
     for arg in args {
@@ -38,13 +38,13 @@ fn main() {
     }
 
     if file_name.is_empty() {
-        print_compile_error("No input files".to_string());
+        print_compile_error("No input files");
     }
 
     let file_exists = Path::new(&file_name).exists();
 
     if !file_exists {
-        print_compile_error("File does not exist".to_string());
+        print_compile_error("File does not exist");
     }
 
     app.file_name = String::from(&file_name);
@@ -66,7 +66,7 @@ fn main() {
     let bytes_read = match &mut file {
         Ok(f) => f.read_to_string(&mut file_buffer).unwrap(),
         Err(_) => {
-            print_compile_error(format!(
+            print_compile_error(&format!(
                 "Could not open file: {} with path: {}",
                 file_name,
                 file_path.display()
@@ -76,7 +76,7 @@ fn main() {
     };
 
     if bytes_read == 0 {
-        print_compile_error("File is empty > Nothing to do".to_string());
+        print_compile_error("File is empty > Nothing to do");
     }
 
     app.content = file_buffer;

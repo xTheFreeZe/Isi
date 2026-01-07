@@ -202,7 +202,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                     app.line_count += 1;
                     chars.next();
                 } else {
-                    print_compile_error(format!("Unknown token: `{}`", c));
+                    print_compile_error(&format!("Unknown token: `{}`", c));
                 }
             }
         }

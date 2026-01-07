@@ -55,7 +55,7 @@ impl IsiToken {
         };
 
         if data_type == DataType::NONE {
-            print_compile_error(format!(
+            print_compile_error(&format!(
                 "Tried to cast `{:?}` to a data type > Unknown",
                 self
             ));
@@ -108,7 +108,7 @@ impl Token {
         };
 
         if data_type == DataType::NONE {
-            print_compile_error(format!(
+            print_compile_error(&format!(
                 "Tried to cast `{}` to a data type > Unknown",
                 self.t_value
             ));
@@ -207,7 +207,7 @@ impl App {
         match token {
             Some(token) => token.clone(),
             None => {
-                print_compile_error(format!("Unexpected end of file at index: {}", self.index));
+                print_compile_error(&format!("Unexpected end of file at index: {}", self.index));
                 exit(1);
             }
         }
@@ -219,7 +219,7 @@ impl App {
         match token {
             Some(token) => token.clone(),
             None => {
-                print_compile_error(format!("Unexpected end of file at index: {}", self.index));
+                print_compile_error(&format!("Unexpected end of file at index: {}", self.index));
                 exit(1);
             }
         }
@@ -230,7 +230,7 @@ impl App {
         let token = self.get();
 
         if token.t_type != expected {
-            print_compile_error(format!(
+            print_compile_error(&format!(
                 "Unexpected `{}` > Expected `{}`",
                 token.t_value,
                 expected.string_value()

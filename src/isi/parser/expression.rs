@@ -20,10 +20,11 @@ pub fn get_expression(app: &mut App) -> (Vec<Token>, usize) {
     let tokens_len = app.tokens.len();
 
     while app.get().t_line == current_line {
+        // When we are at the last token of the file, consume it and break the loop
         if app.index + 1 == tokens_len {
-            print_compile_error(String::from(
-                "Hit unexpected EOF while gathering expression",
-            ));
+            expression.push(app.get());
+            app.next();
+            break;
         }
         expression.push(app.get());
         app.next();
@@ -52,7 +53,7 @@ pub fn parse_expression(expression: &[Token]) -> Expression {
                 e_body: None,
             };
         } else {
-            print_compile_error(format!(
+            print_compile_error(&format!(
                 "`{}` is not a valid math expression",
                 string_expression
             ));
@@ -71,7 +72,7 @@ pub fn parse_expression(expression: &[Token]) -> Expression {
                 parsed_expression.e_length += 1;
             }
             _ => {
-                print_compile_error(format!(
+                print_compile_error(&format!(
                     "Unknown token type in expression parser: `{:?}` \nStopped on value: `{}`",
                     piece.t_type, piece.t_value
                 ));
