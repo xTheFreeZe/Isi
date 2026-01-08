@@ -14,16 +14,17 @@ pub mod isi;
 
 fn main() {
     let mut app = App {
-        file_name: String::from(""),
-        file_dir: String::from(""),
-        content: String::from(""),
+        file_name: String::new(),
+        file_dir: String::new(),
+        content: String::new(),
         line_count: 1,
         column_count: 1,
         index: 0,
         tokens: Vec::new(),
         nodes: Vec::new(),
+        current_var_str: String::new(),
     };
-    let mut file_name = String::from("");
+    let mut file_name = String::new();
 
     let args = env::args();
 

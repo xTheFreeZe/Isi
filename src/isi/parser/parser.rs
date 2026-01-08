@@ -1,3 +1,5 @@
+use colored::Colorize;
+
 use crate::isi::{
     ast::ast::{App, DataType, Function, FunctionParam, IsiNode, IsiToken, Variable},
     parser::expression::{get_expression, parse_expression},
@@ -25,6 +27,7 @@ fn parse_variable(app: &mut App) -> IsiNode {
 
     let mut token = app.get();
     var.v_name = token.t_value.to_string();
+    app.current_var_str = token.t_value;
     app.next();
 
     app.expect(IsiToken::ARROW);
@@ -132,11 +135,21 @@ fn parse_function(app: &mut App) -> IsiNode {
     app.expect(IsiToken::RPAREN);
     app.next();
 
+    if latest_expression_type == DataType::NONE {
+        let hint =
+            "Hint: This error will be gone once the `effect` data type is implemented".blue();
+        println!("{hint}");
+        print_compile_error(format!(
+            "Empty block in function `{}`: An empty block is not allowed > All blocks must evaluate to a value",
+            app.current_var_str
+        ).as_str());
+    }
+
     if latest_expression_type != f_return_type {
         print_compile_error(
             format!(
-                "Function `{}` has return type `{:?}` but returns a value of type `{:?}`",
-                "[name]", f_return_type, latest_expression_type
+                "Mismatched types: Function `{}` expexted `{}`, found `{}`",
+                app.current_var_str, f_return_type, latest_expression_type
             )
             .as_str(),
         );

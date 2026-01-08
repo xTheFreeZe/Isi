@@ -1,5 +1,5 @@
 use crate::isi::util::util::print_compile_error;
-use std::process::exit;
+use std::{fmt::Display, process::exit};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum IsiToken {
@@ -44,6 +44,17 @@ pub enum DataType {
     String,
 
     NONE,
+}
+
+impl Display for DataType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            DataType::Int => write!(f, "integer"),
+            DataType::Float => write!(f, "floating_point_number"),
+            DataType::String => write!(f, "string_literal"),
+            DataType::NONE => write!(f, "none"),
+        }
+    }
 }
 
 impl IsiToken {
@@ -192,6 +203,7 @@ pub struct App {
     pub column_count: u64,
 
     pub index: usize,
+    pub current_var_str: String,
     pub tokens: Vec<Token>,
     pub nodes: Vec<IsiNode>,
 }
