@@ -1,5 +1,5 @@
 use crate::isi::{
-    ast::ast::{App, Function, FunctionParam, IsiNode, IsiToken, Variable},
+    ast::ast::{App, DataType, Function, FunctionParam, IsiNode, IsiToken, Variable},
     parser::expression::{get_expression, parse_expression},
     util::util::print_compile_error,
 };
@@ -121,14 +121,26 @@ fn parse_function(app: &mut App) -> IsiNode {
     app.next();
 
     // Empty function
+    let mut latest_expression_type = DataType::NONE;
     if app.get().t_type == IsiToken::RBRACE {
         app.next();
     } else {
-        let f_body = parse_function_body(app);
+        let (f_body, latest_expression) = parse_function_body(app);
         function.function_body = Some(f_body);
+        latest_expression_type = latest_expression;
     }
     app.expect(IsiToken::RPAREN);
     app.next();
+
+    if latest_expression_type != f_return_type {
+        print_compile_error(
+            format!(
+                "Function `{}` has return type `{:?}` but returns a value of type `{:?}`",
+                "[name]", f_return_type, latest_expression_type
+            )
+            .as_str(),
+        );
+    }
 
     IsiNode::IsiFunction(function)
 }
@@ -175,7 +187,7 @@ fn parse_function_params(app: &mut App) -> Vec<FunctionParam> {
     params
 }
 
-fn parse_function_body(app: &mut App) -> Vec<IsiNode> {
+fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
     let mut body: Vec<IsiNode> = Vec::new();
     while app.get().t_type != IsiToken::RBRACE {
         let token = app.get();
@@ -211,5 +223,26 @@ fn parse_function_body(app: &mut App) -> Vec<IsiNode> {
     app.expect(IsiToken::RBRACE);
     // Go over the `}`
     app.next();
-    body
+
+    let latest_data_type = retrieve_last_data_type(&mut body);
+    (body, latest_data_type)
+}
+
+/// Starts at the end of the function body and goes back to the front, until it finds
+/// a Datatype, in which case, that is the latest
+fn retrieve_last_data_type(body: &mut [IsiNode]) -> DataType {
+    body.reverse();
+    let mut latest = DataType::NONE;
+    for element in body {
+        match element {
+            IsiNode::IsiExpression(expression) => {
+                latest = expression.e_type;
+                break;
+            }
+            _ => {
+                continue;
+            }
+        }
+    }
+    latest
 }

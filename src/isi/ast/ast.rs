@@ -37,7 +37,7 @@ pub enum IsiToken {
     EMPTY,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub enum DataType {
     Int,
     Float,
