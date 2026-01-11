@@ -1,5 +1,5 @@
 use crate::isi::util::util::print_compile_error;
-use std::{fmt::Display, process::exit};
+use std::{collections::HashMap, fmt::Display, process::exit};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum IsiToken {
@@ -128,7 +128,7 @@ impl Token {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct Expression {
     pub e_length: usize,
     pub e_type: DataType,
@@ -147,9 +147,15 @@ impl Default for Expression {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
+pub struct VariableDecl {
+    pub name: String,
+}
+
+#[derive(PartialEq, Debug, Clone)]
 pub struct Variable {
     pub v_name: String,
+    pub v_type: DataType,
     pub v_node: Box<IsiNode>,
 }
 
@@ -157,19 +163,26 @@ impl Default for Variable {
     fn default() -> Self {
         Variable {
             v_name: String::new(),
+            v_type: DataType::NONE,
             v_node: Box::new(IsiNode::EmptyNode),
         }
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct FunctionParam {
     pub name: String,
     pub p_type: DataType,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
+pub struct FunctionDecl {
+    pub name: String,
+}
+
+#[derive(PartialEq, Debug, Clone)]
 pub struct Function {
+    pub name: String,
     pub params: Option<Vec<FunctionParam>>,
     pub return_type: DataType,
     pub function_body: Option<Vec<IsiNode>>,
@@ -178,6 +191,7 @@ pub struct Function {
 impl Default for Function {
     fn default() -> Self {
         Function {
+            name: String::new(),
             params: None,
             return_type: DataType::NONE,
             function_body: None,
@@ -185,11 +199,29 @@ impl Default for Function {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
+pub struct FunctionCall {
+    pub function: Function,
+    pub arguments: Option<Vec<IsiNode>>,
+}
+
+impl Default for FunctionCall {
+    fn default() -> Self {
+        FunctionCall {
+            function: Function::default(),
+            arguments: None,
+        }
+    }
+}
+
+#[derive(PartialEq, Debug, Clone)]
 pub enum IsiNode {
     IsiExpression(Expression),
+    IsiVariableDecl(VariableDecl),
     IsiVariable(Variable),
+    IsiFunctionDecl(FunctionDecl),
     IsiFunction(Function),
+    IsiFunctionCall(FunctionCall),
 
     EmptyNode,
 }
@@ -206,6 +238,8 @@ pub struct App {
     pub current_var_str: String,
     pub tokens: Vec<Token>,
     pub nodes: Vec<IsiNode>,
+    pub function_table: HashMap<String, Function>,
+    pub variable_table: HashMap<String, Variable>,
 }
 
 impl App {
@@ -248,5 +282,46 @@ impl App {
                 expected.string_value()
             ));
         }
+    }
+
+    /// Push a Node of type `IsiNode` in the ast
+    pub fn push_node<N>(&mut self, node: N)
+    where
+        N: Into<IsiNode>,
+    {
+        self.nodes.push(node.into());
+    }
+
+    pub fn get_function_from_map(&mut self, name: &str) -> Function {
+        if let Some(f) = self.function_table.get(name) {
+            return f.clone();
+        } else {
+            print_compile_error(&format!(
+                "Did not find function `{}` in function table",
+                name
+            ));
+            exit(1);
+        }
+    }
+
+    pub fn push_function_into_map(&mut self, function: Function) {
+        self.function_table.insert(function.name.clone(), function);
+    }
+
+    pub fn get_variable_from_map(&mut self, name: &str) -> Variable {
+        if let Some(f) = self.variable_table.get(name) {
+            return f.clone();
+        } else {
+            print_compile_error(&format!(
+                "Did not find variable `{}` in variable table",
+                name
+            ));
+            exit(1);
+        }
+    }
+
+    pub fn push_variable_into_map(&mut self, variable: Variable) {
+        self.variable_table
+            .insert(variable.v_name.clone(), variable);
     }
 }

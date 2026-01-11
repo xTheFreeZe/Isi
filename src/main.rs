@@ -4,6 +4,7 @@ use crate::isi::ast::ast::App;
 use crate::isi::parser::parser::parse;
 use crate::isi::scanner::scanner::scan;
 use crate::isi::util::util::print_compile_error;
+use std::collections::HashMap;
 use std::env;
 use std::fs::File;
 use std::io::Read;
@@ -23,6 +24,8 @@ fn main() {
         tokens: Vec::new(),
         nodes: Vec::new(),
         current_var_str: String::new(),
+        function_table: HashMap::new(),
+        variable_table: HashMap::new(),
     };
     let mut file_name = String::new();
 
