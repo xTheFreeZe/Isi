@@ -44,10 +44,12 @@ pub fn parse_call(app: &mut App) -> IsiNode {
     if let Some(params) = &function.params {
         for (i, a) in arguments.iter().enumerate() {
             let expected = params[i].p_type;
-            let mut got = DataType::NONE;
+            let got: DataType;
             if a.t_type == IsiToken::VARIABLE {
                 let var = app.get_variable_from_map(&a.t_value);
                 got = var.v_type;
+            } else {
+                got = a.t_type.to_data_type();
             }
             if got != expected {
                 print_compile_error(&format!(

@@ -6,7 +6,7 @@ use crate::isi::{
     parser::{
         expression::{get_expression, parse_expression},
         parse_call::parse_call,
-        parse_function::{parse_function, retrieve_last_data_type},
+        parse_function::parse_function,
     },
     util::util::print_compile_error,
 };
