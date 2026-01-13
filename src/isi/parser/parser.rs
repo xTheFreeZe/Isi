@@ -65,10 +65,12 @@ fn parse_variable(app: &mut App) -> IsiNode {
     if !valid_tokens.iter().any(|e| e == &token.t_value)
         && !matches!(token.t_type, IsiToken::INTEGER)
         && !matches!(token.t_type, IsiToken::STRING)
+        && !matches!(token.t_type, IsiToken::TRUE)
+        && !matches!(token.t_type, IsiToken::FALSE)
         && token.t_type != IsiToken::CALL
     {
         print_compile_error(&format!(
-            "Unexpected `{}` > Expected either: `(`, `[` or `{{`",
+            "Unexpected `{}` > Expected either: `(`, `[` or `{{` or a valid value",
             &token.t_value,
         ));
     }
@@ -106,6 +108,13 @@ fn parse_variable(app: &mut App) -> IsiNode {
             app.index = expression.1;
             var.v_type = DataType::String;
             IsiNode::IsiExpression(string_expression)
+        }
+        IsiToken::TRUE | IsiToken::FALSE => {
+            let expression = get_expression(app);
+            let bool_expression = parse_expression(&expression.0);
+            app.index = expression.1;
+            var.v_type = DataType::Bool;
+            IsiNode::IsiExpression(bool_expression)
         }
         _ => IsiNode::EmptyNode,
     };

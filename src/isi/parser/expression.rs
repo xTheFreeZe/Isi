@@ -71,6 +71,11 @@ pub fn parse_expression(expression: &[Token]) -> Expression {
                 parsed_expression.e_type = piece.t_type.to_data_type();
                 parsed_expression.e_length += 1;
             }
+            IsiToken::TRUE | IsiToken::FALSE => {
+                parsed_expression.e_value = piece.t_value.clone();
+                parsed_expression.e_type = piece.t_type.to_data_type();
+                parsed_expression.e_length += 1;
+            }
             _ => {
                 print_compile_error(&format!(
                     "Unknown token type in expression parser: `{:?}` \nStopped on value: `{}`",

@@ -87,7 +87,7 @@ fn main() {
     app.tokens = scan(&mut app);
     parse(&mut app);
 
-    // for node in app.nodes {
+    // for node in &app.nodes {
     //     println!("{:?}", node);
     // }
 }

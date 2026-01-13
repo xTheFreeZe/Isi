@@ -41,7 +41,9 @@ pub fn parse_call(app: &mut App) -> IsiNode {
         ));
     }
 
-    if let Some(params) = &function.params {
+    if let Some(params) = &function.params
+        && &function_name != "print"
+    {
         for (i, a) in arguments.iter().enumerate() {
             let expected = params[i].p_type;
             let got: DataType;

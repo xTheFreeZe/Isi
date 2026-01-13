@@ -27,7 +27,7 @@ pub enum IsiToken {
     INTEGER,
     KEYWORD,
     STRING,
-    TRUE(),
+    TRUE,
     FALSE,
     NIL,
 
@@ -42,6 +42,7 @@ pub enum DataType {
     Int,
     Float,
     String,
+    Bool,
 
     NONE,
 }
@@ -52,6 +53,7 @@ impl Display for DataType {
             DataType::Int => write!(f, "integer"),
             DataType::Float => write!(f, "floating_point_number"),
             DataType::String => write!(f, "string_literal"),
+            DataType::Bool => write!(f, "boolean"),
             DataType::NONE => write!(f, "none"),
         }
     }
@@ -62,6 +64,7 @@ impl IsiToken {
         let data_type = match self {
             Self::INTEGER => DataType::Int,
             Self::STRING => DataType::String,
+            Self::TRUE | Self::FALSE => DataType::Bool,
             _ => DataType::NONE,
         };
 

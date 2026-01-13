@@ -12,7 +12,7 @@ fn default_token(app: &App) -> Token {
 }
 
 pub fn scan(app: &mut App) -> Vec<Token> {
-    let keywords: Vec<&str> = vec!["int", "string", "float"];
+    let keywords: Vec<&str> = vec!["int", "string", "float", "true", "false"];
     let mut tokens: Vec<Token> = Vec::new();
     let mut chars = app.content.chars().peekable();
     while let Some(&c) = chars.peek() {
@@ -51,7 +51,11 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                 if keywords.contains(&full_str.as_str()) {
                     tokens.push(Token {
                         t_value: String::from(&full_str),
-                        t_type: IsiToken::KEYWORD,
+                        t_type: match full_str.as_str() {
+                            "true" => IsiToken::TRUE,
+                            "false" => IsiToken::FALSE,
+                            _ => IsiToken::KEYWORD,
+                        },
                         ..default_token(app)
                     });
                 // x( -> Call
