@@ -126,7 +126,7 @@ fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
             },
             IsiToken::INTEGER => {
                 let expression = get_expression(app);
-                let int_expression = parse_expression(&expression.0);
+                let int_expression = parse_expression(app, &expression.0);
                 body.push(IsiNode::IsiExpression(int_expression));
 
                 // Set the index of the parser to the end of the parsed expression
@@ -134,8 +134,15 @@ fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
             }
             IsiToken::STRING => {
                 let expression = get_expression(app);
-                let string_expression = parse_expression(&expression.0);
+                let string_expression = parse_expression(app, &expression.0);
                 body.push(IsiNode::IsiExpression(string_expression));
+
+                app.index = expression.1;
+            }
+            IsiToken::VARIABLE => {
+                let expression = get_expression(app);
+                let var_expression = parse_expression(app, &expression.0);
+                body.push(IsiNode::IsiExpression(var_expression));
 
                 app.index = expression.1;
             }

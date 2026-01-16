@@ -97,21 +97,21 @@ fn parse_variable(app: &mut App) -> IsiNode {
         // This arm is used when you assign a variable a number
         IsiToken::INTEGER => {
             let expression = get_expression(app);
-            let int_expression = parse_expression(&expression.0);
+            let int_expression = parse_expression(app, &expression.0);
             app.index = expression.1;
             var.v_type = DataType::Int;
             IsiNode::IsiExpression(int_expression)
         }
         IsiToken::STRING => {
             let expression = get_expression(app);
-            let string_expression = parse_expression(&expression.0);
+            let string_expression = parse_expression(app, &expression.0);
             app.index = expression.1;
             var.v_type = DataType::String;
             IsiNode::IsiExpression(string_expression)
         }
         IsiToken::TRUE | IsiToken::FALSE => {
             let expression = get_expression(app);
-            let bool_expression = parse_expression(&expression.0);
+            let bool_expression = parse_expression(app, &expression.0);
             app.index = expression.1;
             var.v_type = DataType::Bool;
             IsiNode::IsiExpression(bool_expression)

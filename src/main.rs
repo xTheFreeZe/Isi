@@ -1,5 +1,3 @@
-// use colored::Colorize;
-
 use crate::isi::ast::ast::App;
 use crate::isi::parser::parser::parse;
 use crate::isi::scanner::scanner::scan;
@@ -87,7 +85,7 @@ fn main() {
     app.tokens = scan(&mut app);
     parse(&mut app);
 
-    // for node in &app.nodes {
-    //     println!("{:?}", node);
-    // }
+    for node in &app.nodes {
+        println!("{:#?}", node);
+    }
 }

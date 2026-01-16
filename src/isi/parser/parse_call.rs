@@ -42,6 +42,7 @@ pub fn parse_call(app: &mut App) -> IsiNode {
     }
 
     if let Some(params) = &function.params
+    		// Well, yeah...
         && &function_name != "print"
     {
         for (i, a) in arguments.iter().enumerate() {

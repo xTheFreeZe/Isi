@@ -35,7 +35,7 @@ pub fn get_expression(app: &mut App) -> (Vec<Token>, usize) {
     (expression, new_index)
 }
 
-pub fn parse_expression(expression: &[Token]) -> Expression {
+pub fn parse_expression(app: &mut App, expression: &[Token]) -> Expression {
     // If it is in fact a simple math expression, we can return early,
     // as we already know the type and value
     if is_simple_algebra_expression(expression) {
@@ -74,6 +74,12 @@ pub fn parse_expression(expression: &[Token]) -> Expression {
             IsiToken::TRUE | IsiToken::FALSE => {
                 parsed_expression.e_value = piece.t_value.clone();
                 parsed_expression.e_type = piece.t_type.to_data_type();
+                parsed_expression.e_length += 1;
+            }
+            IsiToken::VARIABLE => {
+                let var = app.get_variable_from_map(&piece.t_value);
+                parsed_expression.e_value = var.v_name;
+                parsed_expression.e_type = var.v_type;
                 parsed_expression.e_length += 1;
             }
             _ => {
