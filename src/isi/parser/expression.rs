@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::isi::{
     ast::ast::{App, DataType, Expression, IsiToken, Token},
     util::util::print_compile_error,
@@ -49,7 +51,7 @@ pub fn parse_expression(app: &mut App, expression: &[Token]) -> Expression {
             return Expression {
                 e_length: expression.len(),
                 e_type: DataType::Int,
-                e_value: eval_result,
+                e_value: Arc::from(eval_result),
                 e_body: None,
             };
         } else {
@@ -132,7 +134,7 @@ fn is_simple_algebra_expression(expression: &[Token]) -> bool {
 ///
 /// \[a, +, b] -> "a+b"
 fn into_str(expression: &[Token]) -> String {
-    expression.iter().map(|e| e.t_value.as_str()).collect()
+    expression.iter().map(|e| e.t_value.as_ref()).collect()
 }
 
 /// This function uses the `prejsx_math` crate to eval math expressions for the compiler

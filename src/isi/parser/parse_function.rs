@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::isi::{
     ast::ast::{App, DataType, Function, FunctionDecl, FunctionParam, IsiNode, IsiToken},
     parser::expression::{get_expression, parse_expression},
@@ -6,7 +8,7 @@ use crate::isi::{
 
 pub fn parse_function(app: &mut App) -> (IsiNode, DataType) {
     let mut function = Function::default();
-    function.name = app.current_var_str.clone();
+    function.name = Arc::from(app.current_var_str.as_str());
 
     // This check is necessary because the [...] might have been omitted
     if app.get().t_type == IsiToken::LBRACKET {
@@ -64,7 +66,7 @@ pub fn parse_function(app: &mut App) -> (IsiNode, DataType) {
 
     app.push_function_into_map(function);
     let function_decl = FunctionDecl {
-        name: app.current_var_str.clone(),
+        name: Arc::from(app.current_var_str.as_str()),
     };
     (
         IsiNode::IsiFunctionDecl(function_decl),
@@ -119,7 +121,7 @@ fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
     while app.get().t_type != IsiToken::RBRACE {
         let token = app.get();
         match token.t_type {
-            IsiToken::KEYWORD => match token.t_value.as_str() {
+            IsiToken::KEYWORD => match token.t_value.as_ref() {
                 _ => {
                     print_compile_error(&format!("Unknown keyword `{}`", token.t_value));
                 }

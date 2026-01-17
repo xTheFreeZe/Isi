@@ -8,14 +8,15 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use std::process::exit;
+use std::sync::Arc;
 
 pub mod isi;
 
 fn main() {
     let mut app = App {
-        file_name: String::new(),
-        file_dir: String::new(),
-        content: String::new(),
+        file_name: Arc::from(""),
+        file_dir: Arc::from(""),
+        content: Arc::from(""),
         line_count: 1,
         column_count: 1,
         index: 0,
@@ -25,7 +26,7 @@ fn main() {
         function_table: HashMap::new(),
         variable_table: HashMap::new(),
     };
-    let mut file_name = String::new();
+    let mut file_name: Arc<str> = Arc::from("");
 
     let args = env::args();
 
@@ -49,9 +50,9 @@ fn main() {
         print_compile_error("File does not exist");
     }
 
-    app.file_name = String::from(&file_name);
+    app.file_name = Arc::from(file_name);
 
-    let file_path = Path::new(&file_name);
+    let file_path = Path::new(app.file_name.as_ref());
     let mut dir = env::current_dir().unwrap();
 
     if let Some(parent) = file_path.parent() {
@@ -60,7 +61,7 @@ fn main() {
         }
     }
 
-    app.file_dir = dir.to_string_lossy().into_owned();
+    app.file_dir = Arc::from(dir.to_string_lossy());
 
     let mut file = File::open(&file_path);
     let mut file_buffer = String::new();
@@ -70,7 +71,7 @@ fn main() {
         Err(_) => {
             print_compile_error(&format!(
                 "Could not open file: {} with path: {}",
-                file_name,
+                &file_name,
                 file_path.display()
             ));
             exit(1);
@@ -81,7 +82,7 @@ fn main() {
         print_compile_error("File is empty > Nothing to do");
     }
 
-    app.content = file_buffer;
+    app.content = Arc::from(file_buffer);
     app.tokens = scan(&mut app);
     parse(&mut app);
 

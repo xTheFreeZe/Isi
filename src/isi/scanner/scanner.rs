@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::isi::ast::ast::Token;
 use crate::isi::util::util::print_compile_error;
 use crate::{App, isi::ast::ast::IsiToken};
@@ -6,7 +8,7 @@ fn default_token(app: &App) -> Token {
     Token {
         t_column: app.column_count,
         t_line: app.line_count,
-        t_value: String::new(),
+        t_value: Arc::from(""),
         t_type: IsiToken::EMPTY,
     }
 }
@@ -30,7 +32,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                 }
                 app.column_count -= 1;
                 tokens.push(Token {
-                    t_value: full_number,
+                    t_value: Arc::from(full_number),
                     t_type: IsiToken::INTEGER,
                     ..default_token(app)
                 });
@@ -50,24 +52,24 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                 // Keyword
                 if keywords.contains(&full_str.as_str()) {
                     tokens.push(Token {
-                        t_value: String::from(&full_str),
                         t_type: match full_str.as_str() {
                             "true" => IsiToken::TRUE,
                             "false" => IsiToken::FALSE,
                             _ => IsiToken::KEYWORD,
                         },
+                        t_value: Arc::from(full_str),
                         ..default_token(app)
                     });
                 // x( -> Call
                 } else if chars.peek().unwrap() == &'(' {
                     tokens.push(Token {
-                        t_value: String::from(&full_str),
+                        t_value: Arc::from(full_str),
                         t_type: IsiToken::CALL,
                         ..default_token(app)
                     });
                 } else {
                     tokens.push(Token {
-                        t_value: String::from(&full_str),
+                        t_value: Arc::from(full_str),
                         t_type: IsiToken::VARIABLE,
                         ..default_token(app)
                     });
@@ -75,7 +77,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
             }
             '-' => {
                 tokens.push(Token {
-                    t_value: String::from(c),
+                    t_value: Arc::from("-"),
                     t_type: IsiToken::MINUS,
                     ..default_token(app)
                 });
@@ -84,7 +86,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                 if chars.peek().unwrap() == &'>' {
                     tokens.pop();
                     tokens.push(Token {
-                        t_value: String::from("->"),
+                        t_value: Arc::from("->"),
                         t_type: IsiToken::ARROW,
                         ..default_token(app)
                     });
@@ -93,7 +95,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
             }
             '+' => {
                 tokens.push(Token {
-                    t_value: String::from(c),
+                    t_value: Arc::from("+"),
                     t_type: IsiToken::PLUS,
                     ..default_token(app)
                 });
@@ -101,7 +103,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
             }
             '>' => {
                 tokens.push(Token {
-                    t_value: String::from(c),
+                    t_value: Arc::from(">"),
                     t_type: IsiToken::RARROW,
                     ..default_token(app)
                 });
@@ -109,7 +111,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
             }
             '<' => {
                 tokens.push(Token {
-                    t_value: String::from(c),
+                    t_value: Arc::from("<"),
                     t_type: IsiToken::LARROW,
                     ..default_token(app)
                 });
@@ -117,7 +119,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
             }
             '(' => {
                 tokens.push(Token {
-                    t_value: String::from(c),
+                    t_value: Arc::from("("),
                     t_type: IsiToken::LPAREN,
                     ..default_token(app)
                 });
@@ -125,7 +127,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
             }
             ')' => {
                 tokens.push(Token {
-                    t_value: String::from(c),
+                    t_value: Arc::from(")"),
                     t_type: IsiToken::RPAREN,
                     ..default_token(app)
                 });
@@ -133,7 +135,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
             }
             '[' => {
                 tokens.push(Token {
-                    t_value: String::from(c),
+                    t_value: Arc::from("["),
                     t_type: IsiToken::LBRACKET,
                     ..default_token(app)
                 });
@@ -141,7 +143,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
             }
             ']' => {
                 tokens.push(Token {
-                    t_value: String::from(c),
+                    t_value: Arc::from("]"),
                     t_type: IsiToken::RBRACKET,
                     ..default_token(app)
                 });
@@ -149,7 +151,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
             }
             '{' => {
                 tokens.push(Token {
-                    t_value: String::from(c),
+                    t_value: Arc::from("{"),
                     t_type: IsiToken::LBRACE,
                     ..default_token(app)
                 });
@@ -157,7 +159,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
             }
             '}' => {
                 tokens.push(Token {
-                    t_value: String::from(c),
+                    t_value: Arc::from("}"),
                     t_type: IsiToken::RBRACE,
                     ..default_token(app)
                 });
@@ -165,7 +167,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
             }
             ':' => {
                 tokens.push(Token {
-                    t_value: String::from(c),
+                    t_value: Arc::from(":"),
                     t_type: IsiToken::COLON,
                     ..default_token(app)
                 });
@@ -187,7 +189,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                 // Consume the closing "
                 chars.next();
                 tokens.push(Token {
-                    t_value: full_str,
+                    t_value: Arc::from(full_str),
                     t_type: IsiToken::STRING,
                     ..default_token(app)
                 });

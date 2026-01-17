@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::isi::{
     ast::ast::{
         App, DataType, Function, FunctionDecl, FunctionParam, IsiNode, IsiToken, Variable,
@@ -14,16 +16,16 @@ use crate::isi::{
 pub fn parse(app: &mut App) {
     // Todo: This goes away once we have a std of sorts
     let print_function = Function {
-        name: String::from("print"),
+        name: Arc::from("print"),
         function_body: None,
         params: Some(vec![FunctionParam {
-            name: String::from("x"),
+            name: Arc::from("x"),
             p_type: DataType::String,
         }]),
         return_type: DataType::NONE,
     };
     let decl = FunctionDecl {
-        name: String::from("print"),
+        name: Arc::from("print"),
     };
     app.push_node(IsiNode::IsiFunctionDecl(decl));
     app.push_function_into_map(print_function);
@@ -50,8 +52,8 @@ fn parse_variable(app: &mut App) -> IsiNode {
     let mut var = Variable::default();
 
     let mut token = app.get();
-    var.v_name = token.t_value.to_string();
-    app.current_var_str = token.t_value;
+    var.v_name = Arc::clone(&token.t_value);
+    app.current_var_str = Arc::clone(&token.t_value).to_string();
     app.next();
 
     app.expect(IsiToken::ARROW);
@@ -62,7 +64,7 @@ fn parse_variable(app: &mut App) -> IsiNode {
 
     // Checks if the token after -> is one of the bracktes above, a number, a string or a function call
     // TODO: Needs to also match Variables
-    if !valid_tokens.iter().any(|e| e == &token.t_value)
+    if !valid_tokens.iter().any(|e| e == &token.t_value.as_ref())
         && !matches!(token.t_type, IsiToken::INTEGER)
         && !matches!(token.t_type, IsiToken::STRING)
         && !matches!(token.t_type, IsiToken::TRUE)

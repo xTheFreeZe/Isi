@@ -1,5 +1,5 @@
 use crate::isi::util::util::print_compile_error;
-use std::{collections::HashMap, fmt::Display, process::exit};
+use std::{collections::HashMap, fmt::Display, process::exit, sync::Arc};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum IsiToken {
@@ -93,7 +93,7 @@ impl IsiToken {
 
 #[derive(Debug, Clone)]
 pub struct Token {
-    pub t_value: String,
+    pub t_value: Arc<str>,
     pub t_type: IsiToken,
     pub t_line: u64,
     pub t_column: u64,
@@ -104,7 +104,7 @@ impl Token {
     ///
     /// "int" or "string" for example
     pub fn is_data_type(&self) -> bool {
-        match self.t_value.as_str() {
+        match self.t_value.as_ref() {
             "int" => true,
             "string" => true,
             _ => false,
@@ -113,7 +113,7 @@ impl Token {
 
     /// Returns a [`DataType`] by matching on the value of the token
     pub fn to_data_type(&self) -> DataType {
-        let data_type = match self.t_value.as_str() {
+        let data_type = match self.t_value.as_ref() {
             "int" => DataType::Int,
             "string" => DataType::String,
             "float" => DataType::Float,
@@ -135,7 +135,7 @@ impl Token {
 pub struct Expression {
     pub e_length: usize,
     pub e_type: DataType,
-    pub e_value: String,
+    pub e_value: Arc<str>,
     pub e_body: Option<Vec<IsiNode>>,
 }
 
@@ -144,7 +144,7 @@ impl Default for Expression {
         Expression {
             e_length: 0,
             e_type: DataType::NONE,
-            e_value: String::new(),
+            e_value: Arc::from(""),
             e_body: None,
         }
     }
@@ -152,12 +152,12 @@ impl Default for Expression {
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct VariableDecl {
-    pub name: String,
+    pub name: Arc<str>,
 }
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct Variable {
-    pub v_name: String,
+    pub v_name: Arc<str>,
     pub v_type: DataType,
     pub v_node: Box<IsiNode>,
 }
@@ -165,7 +165,7 @@ pub struct Variable {
 impl Default for Variable {
     fn default() -> Self {
         Variable {
-            v_name: String::new(),
+            v_name: Arc::from(""),
             v_type: DataType::NONE,
             v_node: Box::new(IsiNode::EmptyNode),
         }
@@ -174,18 +174,18 @@ impl Default for Variable {
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct FunctionParam {
-    pub name: String,
+    pub name: Arc<str>,
     pub p_type: DataType,
 }
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct FunctionDecl {
-    pub name: String,
+    pub name: Arc<str>,
 }
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct Function {
-    pub name: String,
+    pub name: Arc<str>,
     pub params: Option<Vec<FunctionParam>>,
     pub return_type: DataType,
     pub function_body: Option<Vec<IsiNode>>,
@@ -194,7 +194,7 @@ pub struct Function {
 impl Default for Function {
     fn default() -> Self {
         Function {
-            name: String::new(),
+            name: Arc::from(""),
             params: None,
             return_type: DataType::NONE,
             function_body: None,
@@ -230,10 +230,10 @@ pub enum IsiNode {
 }
 
 pub struct App {
-    pub file_name: String,
-    pub file_dir: String,
+    pub file_name: Arc<str>,
+    pub file_dir: Arc<str>,
 
-    pub content: String,
+    pub content: Arc<str>,
     pub line_count: u64,
     pub column_count: u64,
 
@@ -241,8 +241,8 @@ pub struct App {
     pub current_var_str: String,
     pub tokens: Vec<Token>,
     pub nodes: Vec<IsiNode>,
-    pub function_table: HashMap<String, Function>,
-    pub variable_table: HashMap<String, Variable>,
+    pub function_table: HashMap<Arc<str>, Function>,
+    pub variable_table: HashMap<Arc<str>, Variable>,
 }
 
 impl App {

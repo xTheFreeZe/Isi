@@ -11,7 +11,7 @@ pub fn parse_call(app: &mut App) -> IsiNode {
     app.expect(IsiToken::VARIABLE);
     let function_name = app.get().t_value;
 
-    if !app.function_table.contains_key(&function_name) {
+    if !app.function_table.contains_key(function_name.as_ref()) {
         print_compile_error(&format!("Unknown function `{}`", function_name))
     }
 
@@ -43,7 +43,7 @@ pub fn parse_call(app: &mut App) -> IsiNode {
 
     if let Some(params) = &function.params
     		// Well, yeah...
-        && &function_name != "print"
+        && function_name.as_ref() != "print"
     {
         for (i, a) in arguments.iter().enumerate() {
             let expected = params[i].p_type;
@@ -63,7 +63,7 @@ pub fn parse_call(app: &mut App) -> IsiNode {
         }
     }
 
-    if function_name == "print" {
+    if function_name.as_ref() == "print" {
         // Das ist so ass, aber geht nur bis jetzt so
         let mut value = arguments[0].t_value.clone();
         if arguments[0].t_type == IsiToken::VARIABLE {
