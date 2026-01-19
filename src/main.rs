@@ -36,7 +36,7 @@ fn main() {
 
     for arg in args {
         if arg.contains(".isi") {
-            file_name = arg
+            file_name = arg.into()
         }
     }
 
@@ -44,13 +44,13 @@ fn main() {
         print_compile_error("No input files");
     }
 
-    let file_exists = Path::new(&file_name).exists();
+    let file_exists = Path::new(file_name.as_ref()).exists();
 
     if !file_exists {
         print_compile_error("File does not exist");
     }
 
-    app.file_name = Arc::from(file_name);
+    app.file_name = file_name;
 
     let file_path = Path::new(app.file_name.as_ref());
     let mut dir = env::current_dir().unwrap();
@@ -71,7 +71,7 @@ fn main() {
         Err(_) => {
             print_compile_error(&format!(
                 "Could not open file: {} with path: {}",
-                &file_name,
+                file_name.clone(),
                 file_path.display()
             ));
             exit(1);
