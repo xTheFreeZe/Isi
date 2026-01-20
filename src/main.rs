@@ -26,31 +26,19 @@ fn main() {
         function_table: HashMap::new(),
         variable_table: HashMap::new(),
     };
-    let mut file_name: Arc<str> = Arc::from("");
-
-    let args = env::args();
-
-    if args.len() == 0 {
-        print_compile_error("No input files");
-    }
-
-    for arg in args {
-        if arg.contains(".isi") {
-            file_name = arg.into()
-        }
-    }
+    let file_name: String = env::args().filter(|arg| arg.ends_with(".isi")).collect();
 
     if file_name.is_empty() {
         print_compile_error("No input files");
     }
 
-    let file_exists = Path::new(file_name.as_ref()).exists();
+    let file_exists = Path::new(&file_name).exists();
 
     if !file_exists {
         print_compile_error("File does not exist");
     }
 
-    app.file_name = file_name;
+    app.file_name = Arc::from(file_name);
 
     let file_path = Path::new(app.file_name.as_ref());
     let mut dir = env::current_dir().unwrap();
@@ -71,7 +59,7 @@ fn main() {
         Err(_) => {
             print_compile_error(&format!(
                 "Could not open file: {} with path: {}",
-                file_name.clone(),
+                app.file_name.clone(),
                 file_path.display()
             ));
             exit(1);
