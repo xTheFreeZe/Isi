@@ -1,5 +1,5 @@
 use crate::isi::{
-    ast::ast::{App, DataType, FunctionCall, IsiNode, IsiToken, Token},
+    ast::ast::{App, DataType, FunctionCall, FunctionCallArgument, IsiNode, IsiToken, Token},
     util::util::print_compile_error,
 };
 
@@ -10,11 +10,6 @@ pub fn parse_call(app: &mut App) -> IsiNode {
 
     app.expect(IsiToken::VARIABLE);
     let function_name = app.get().t_value;
-
-    if !app.function_table.contains_key(function_name.as_ref()) {
-        print_compile_error(&format!("Unknown function `{}`", function_name))
-    }
-
     let function = app.get_function_from_map(&function_name);
     call.function = function.clone();
 
@@ -41,10 +36,8 @@ pub fn parse_call(app: &mut App) -> IsiNode {
         ));
     }
 
-    if let Some(params) = &function.params
-    		// Well, yeah...
-        && function_name.as_ref() != "print"
-    {
+    let mut call_arguments: Vec<FunctionCallArgument> = Vec::new();
+    if let Some(params) = &function.params {
         for (i, a) in arguments.iter().enumerate() {
             let expected = params[i].p_type;
             let got: DataType;
@@ -60,22 +53,16 @@ pub fn parse_call(app: &mut App) -> IsiNode {
                     expected, got, params[i].name, function.name
                 ));
             }
+            let call_argument = FunctionCallArgument {
+                name: arguments[i].t_value.clone(),
+                a_type: got,
+            };
+            call_arguments.push(call_argument);
         }
     }
 
-    if function_name.as_ref() == "print" {
-        // Das ist so ass, aber geht nur bis jetzt so
-        let mut value = arguments[0].t_value.clone();
-        if arguments[0].t_type == IsiToken::VARIABLE {
-            let arg_var = app.get_variable_from_map(&value);
-            match *arg_var.v_node {
-                IsiNode::IsiExpression(expression) => {
-                    value = expression.e_value;
-                }
-                _ => {}
-            }
-        }
-        println!("{}", value)
+    if !call_arguments.is_empty() {
+        call.arguments = Some(call_arguments);
     }
 
     // Skip the `)` to close the function call

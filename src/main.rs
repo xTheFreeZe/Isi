@@ -73,8 +73,7 @@ fn main() {
     app.content = Arc::from(file_buffer);
     app.tokens = scan(&mut app);
     parse(&mut app);
-
-    for node in &app.nodes {
-        println!("{:#?}", node);
-    }
+    // for node in &app.nodes {
+    //     println!("{:#?}", node);
+    // }
 }

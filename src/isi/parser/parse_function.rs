@@ -2,7 +2,10 @@ use std::sync::Arc;
 
 use crate::isi::{
     ast::ast::{App, DataType, Function, FunctionDecl, FunctionParam, IsiNode, IsiToken},
-    parser::expression::{get_expression, parse_expression},
+    parser::{
+        expression::{get_expression, parse_expression},
+        parser::parse_variable,
+    },
     util::util::print_compile_error,
 };
 
@@ -142,11 +145,24 @@ fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
                 app.index = expression.1;
             }
             IsiToken::VARIABLE => {
-                let expression = get_expression(app);
-                let var_expression = parse_expression(app, &expression.0);
-                body.push(IsiNode::IsiExpression(var_expression));
+                let is_known_variable = app.variable_table.contains_key(&token.t_value);
+                // Only parse the `new` variable, if it isn't already in the variable table
+                // TODO: This is kind of stupid I guess
+                if !is_known_variable {
+                    let next_token = app.peek_next();
+                    if next_token.t_type != IsiToken::ARROW {
+                        print_compile_error(&format!("Unknown variable `{}`", token.t_value));
+                    }
 
-                app.index = expression.1;
+                    let variable = parse_variable(app, true);
+                    body.push(variable);
+                } else {
+                    let expression = get_expression(app);
+                    let variable_expression = parse_expression(app, &expression.0);
+                    body.push(IsiNode::IsiExpression(variable_expression));
+
+                    app.index = expression.1;
+                }
             }
             _ => {
                 print_compile_error(&format!(

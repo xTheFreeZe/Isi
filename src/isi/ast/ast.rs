@@ -202,10 +202,16 @@ impl Default for Function {
     }
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct FunctionCallArgument {
+    pub name: Arc<str>,
+    pub a_type: DataType,
+}
+
 #[derive(PartialEq, Debug, Clone)]
 pub struct FunctionCall {
     pub function: Function,
-    pub arguments: Option<Vec<IsiNode>>,
+    pub arguments: Option<Vec<FunctionCallArgument>>,
 }
 
 impl Default for FunctionCall {
@@ -299,10 +305,7 @@ impl App {
         if let Some(f) = self.function_table.get(name) {
             return f.clone();
         } else {
-            print_compile_error(&format!(
-                "Did not find function `{}` in function table",
-                name
-            ));
+            print_compile_error(&format!("Unknown function `{}`", name));
             exit(1);
         }
     }
@@ -315,10 +318,7 @@ impl App {
         if let Some(f) = self.variable_table.get(name) {
             return f.clone();
         } else {
-            print_compile_error(&format!(
-                "Did not find variable `{}` in variable table",
-                name
-            ));
+            print_compile_error(&format!("Unknown variable `{}`", name));
             exit(1);
         }
     }

@@ -1,10 +1,7 @@
 use std::sync::Arc;
 
 use crate::isi::{
-    ast::ast::{
-        App, DataType, Function, FunctionDecl, FunctionParam, IsiNode, IsiToken, Variable,
-        VariableDecl,
-    },
+    ast::ast::{App, DataType, IsiNode, IsiToken, Variable, VariableDecl},
     parser::{
         expression::{get_expression, parse_expression},
         parse_call::parse_call,
@@ -14,27 +11,12 @@ use crate::isi::{
 };
 
 pub fn parse(app: &mut App) {
-    // Todo: This goes away once we have a std of sorts
-    let print_function = Function {
-        name: Arc::from("print"),
-        function_body: None,
-        params: Some(vec![FunctionParam {
-            name: Arc::from("x"),
-            p_type: DataType::String,
-        }]),
-        return_type: DataType::NONE,
-    };
-    let decl = FunctionDecl {
-        name: Arc::from("print"),
-    };
-    app.push_node(IsiNode::IsiFunctionDecl(decl));
-    app.push_function_into_map(print_function);
     while app.index < app.tokens.len() {
         let token = app.get();
 
         match token.t_type {
             IsiToken::VARIABLE => {
-                let node = parse_variable(app);
+                let node = parse_variable(app, false);
                 app.nodes.push(node);
             }
             IsiToken::LPAREN => {
@@ -48,12 +30,19 @@ pub fn parse(app: &mut App) {
     }
 }
 
-fn parse_variable(app: &mut App) -> IsiNode {
+/// Parses the current variable and just returns the VariableDecl -> A String Node
+///
+/// The actual variable gets pushed into the HashMap
+///
+/// `inside_function`: Tells the compiler to overwrite the current function in the app if true
+pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
     let mut var = Variable::default();
 
     let mut token = app.get();
     var.v_name = Arc::clone(&token.t_value);
-    app.current_var_str = Arc::clone(&token.t_value).to_string();
+    if !inside_function {
+        app.current_var_str = Arc::clone(&token.t_value).to_string();
+    }
     app.next();
 
     app.expect(IsiToken::ARROW);

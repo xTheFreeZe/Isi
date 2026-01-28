@@ -68,7 +68,6 @@ pub fn parse_expression(app: &mut App, expression: &[Token]) -> Expression {
         let next_does_exist = next_token.is_some();
         match &piece.t_type {
             IsiToken::STRING => {
-                // TODO: Find a better way without cloning
                 parsed_expression.e_value = piece.t_value.clone();
                 parsed_expression.e_type = piece.t_type.to_data_type();
                 parsed_expression.e_length += 1;
@@ -98,16 +97,6 @@ pub fn parse_expression(app: &mut App, expression: &[Token]) -> Expression {
     }
 
     parsed_expression
-}
-
-pub fn parse_single_expression(token: &Token) -> Expression {
-    let mut expression = Expression::default();
-
-    expression.e_length = 1;
-    expression.e_type = token.t_type.to_data_type();
-    expression.e_value = token.t_value.clone();
-
-    expression
 }
 
 ///Returns `true` if the expression is a simple math expression
