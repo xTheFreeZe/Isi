@@ -16,12 +16,14 @@ pub enum IsiToken {
     QUESTION, // ?
     MINUS,    // -
     PLUS,     // +
+    EQUALS,   // =
     STAR,     // *
     SLASH,    // /
     ARROW,    // ->
     SQUOTE,   // ''
     DQUOTE,   // ""
     COLON,    // :
+    DOLLAR,   // $
 
     VARIABLE,
     INTEGER,
@@ -188,7 +190,9 @@ pub struct Function {
     pub name: Arc<str>,
     pub params: Option<Vec<FunctionParam>>,
     pub return_type: DataType,
+    pub is_builtin: bool,
     pub function_body: Option<Vec<IsiNode>>,
+    pub builtin_code: String,
 }
 
 impl Default for Function {
@@ -197,7 +201,9 @@ impl Default for Function {
             name: Arc::from(""),
             params: None,
             return_type: DataType::NONE,
+            is_builtin: false,
             function_body: None,
+            builtin_code: String::new(),
         }
     }
 }

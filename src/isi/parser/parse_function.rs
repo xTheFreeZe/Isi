@@ -9,9 +9,19 @@ use crate::isi::{
     util::util::print_compile_error,
 };
 
-pub fn parse_function(app: &mut App) -> (IsiNode, DataType) {
+/// Parses the function
+///
+/// Returns:
+///
+/// 1: The Function Node
+///
+/// 2: The return type of the function
+///
+/// The return type can than be easily used to assign a data type to the variable
+pub fn parse_function(app: &mut App, is_builtin: bool) -> (IsiNode, DataType) {
     let mut function = Function::default();
     function.name = Arc::from(app.current_var_str.as_str());
+    function.is_builtin = is_builtin;
 
     // This check is necessary because the [...] might have been omitted
     if app.get().t_type == IsiToken::LBRACKET {
@@ -35,7 +45,26 @@ pub fn parse_function(app: &mut App) -> (IsiNode, DataType) {
     function.return_type = f_return_type;
 
     app.next();
-    app.expect(IsiToken::LBRACE);
+    if is_builtin {
+        app.expect(IsiToken::RPAREN);
+        app.next();
+        app.expect(IsiToken::EQUALS);
+        app.next();
+        app.expect(IsiToken::STRING);
+        function.builtin_code = app.get().t_value.to_string();
+        app.next();
+
+        app.push_function_into_map(function);
+        let function_decl = FunctionDecl {
+            name: Arc::from(app.current_var_str.as_str()),
+        };
+        return (
+            IsiNode::IsiFunctionDecl(function_decl),
+            return_type.to_data_type(),
+        );
+    } else {
+        app.expect(IsiToken::LBRACE);
+    }
     app.next();
 
     // Empty function

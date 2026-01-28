@@ -1,0 +1,1 @@
+print_int -> c ([x: int] :int) = $This is the C Code of print_int$

@@ -76,4 +76,6 @@ fn main() {
     // for node in &app.nodes {
     //     println!("{:#?}", node);
     // }
+    // let func = app.get_function_from_map("print_int");
+    // println!("{func:?}");
 }

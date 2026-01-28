@@ -37,6 +37,7 @@ pub fn parse(app: &mut App) {
 /// `inside_function`: Tells the compiler to overwrite the current function in the app if true
 pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
     let mut var = Variable::default();
+    let mut is_builtin_func = false;
 
     let mut token = app.get();
     var.v_name = Arc::clone(&token.t_value);
@@ -48,7 +49,14 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
     app.expect(IsiToken::ARROW);
 
     app.next();
+
+    if app.get().t_value.as_ref() == "c" {
+        is_builtin_func = true;
+        app.next();
+    }
+
     token = app.get();
+
     let valid_tokens = ["(", "[", "{"];
 
     // Checks if the token after -> is one of the bracktes above, a number, a string or a function call
@@ -77,7 +85,7 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
             let (function_node, function_type) =
                 if next.t_type == IsiToken::LBRACKET || next.t_type == IsiToken::COLON {
                     app.next();
-                    parse_function(app)
+                    parse_function(app, is_builtin_func)
                 } else {
                     (IsiNode::EmptyNode, DataType::NONE)
                 };

@@ -37,7 +37,7 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                     ..default_token(app)
                 });
             }
-            'a'..='z' => {
+            'a'..='z' | 'A'..='Z' => {
                 let mut full_str = String::new();
                 while let Some(&d) = chars.peek() {
                     if d.is_ascii_alphanumeric() || d == '_' {
@@ -100,6 +100,34 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                     ..default_token(app)
                 });
                 chars.next();
+            }
+            '=' => {
+                tokens.push(Token {
+                    t_value: Arc::from("="),
+                    t_type: IsiToken::EQUALS,
+                    ..default_token(app)
+                });
+                chars.next();
+            }
+            '$' => {
+                let mut full_str = String::new();
+                chars.next();
+                while let Some(&d) = chars.peek() {
+                    if d != '$' {
+                        app.column_count += 1;
+                        full_str.push(d);
+                        chars.next();
+                    } else {
+                        break;
+                    }
+                }
+                // Consume the closing "
+                chars.next();
+                tokens.push(Token {
+                    t_value: Arc::from(full_str),
+                    t_type: IsiToken::STRING,
+                    ..default_token(app)
+                });
             }
             '>' => {
                 tokens.push(Token {
