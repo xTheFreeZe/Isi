@@ -58,7 +58,11 @@ fn main() {
 
     // Add the std functions first
     //  This is awkward and needs to be changed. Maybe add the ast nodes of the parsed file instead?
-    let std_path = "C:\\Users\\marwi\\dev\\Isi\\std\\core.isi";
+    let std_path = if env::consts::OS == "windows" {
+        "std\\core.isi"
+    } else {
+        "std/core.isi"
+    };
     let mut std_file = File::open(&std_path);
     match &mut std_file {
         Ok(f) => f.read_to_string(&mut file_buffer).unwrap(),

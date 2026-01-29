@@ -10,8 +10,13 @@ pub fn generator(app: &mut App) {
             IsiNode::IsiVariableDecl(variable_decl) => {
                 let full_variable = app.get_variable_from_map(variable_decl.name.as_ref());
                 let variable_body = *full_variable.v_node;
-                let variable_body_code = match variable_body {
-                    IsiNode::IsiExpression(expression) => todo!(),
+                let _variable_body_code = match variable_body {
+                    IsiNode::IsiFunctionDecl(function_decl) => {
+                        println!("Got  a function decl -> {}", function_decl.name)
+                    }
+                    IsiNode::IsiExpression(expression) => {
+                        println!("Got  an expression -> {}", expression.e_value)
+                    }
                     _ => {
                         print_compile_error(&format!(
                             "Unknown node in generator: {:#?}",
@@ -21,7 +26,7 @@ pub fn generator(app: &mut App) {
                 };
             }
             _ => {
-                print_compile_error(&format!("Unknown node in generator: {:#?}", node));
+                print_compile_error(&format!("Unknown head node in generator: {:#?}", node));
             }
         }
         app.index += 1;

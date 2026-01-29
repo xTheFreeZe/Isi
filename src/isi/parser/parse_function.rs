@@ -68,7 +68,7 @@ pub fn parse_function(app: &mut App, is_builtin: bool) -> (IsiNode, DataType) {
     app.next();
 
     // Empty function
-    let mut latest_expression_type = DataType::NONE;
+    let mut latest_expression_type = DataType::Nil;
     if app.get().t_type == IsiToken::RBRACE {
         app.next();
     } else {
@@ -79,21 +79,11 @@ pub fn parse_function(app: &mut App, is_builtin: bool) -> (IsiNode, DataType) {
     app.expect(IsiToken::RPAREN);
     app.next();
 
-    if latest_expression_type == DataType::NONE {
-        print_compile_error(format!(
-            "Empty block in function `{}`: An empty block is not allowed > All blocks must evaluate to a value",
-            app.current_var_str
-        ).as_str());
-    }
-
     if latest_expression_type != f_return_type {
-        print_compile_error(
-            format!(
-                "Mismatched types: Function `{}` expexted `{}`, found `{}`",
-                app.current_var_str, f_return_type, latest_expression_type
-            )
-            .as_str(),
-        );
+        print_compile_error(&format!(
+            "Mismatched types: Function `{}` expexted `{}`, found `{}`",
+            app.current_var_str, f_return_type, latest_expression_type
+        ));
     }
 
     app.push_function_into_map(function);

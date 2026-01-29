@@ -1,1 +1,5 @@
-print_string -> c ([x: string] :nil) = $printf("%d", x)$
+
+
+
+
+print_string -> c ([x: string] :nil) = $printf("%s", x)$
