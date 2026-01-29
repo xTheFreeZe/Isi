@@ -1,4 +1,5 @@
 use crate::isi::ast::ast::App;
+use crate::isi::generator::generator::generator;
 use crate::isi::parser::parser::parse;
 use crate::isi::scanner::scanner::scan;
 use crate::isi::util::util::print_compile_error;
@@ -25,6 +26,7 @@ fn main() {
         current_var_str: String::new(),
         function_table: HashMap::new(),
         variable_table: HashMap::new(),
+        generated_code: String::new(),
     };
     let file_name: String = env::args().filter(|arg| arg.ends_with(".isi")).collect();
 
@@ -54,6 +56,18 @@ fn main() {
     let mut file = File::open(&file_path);
     let mut file_buffer = String::new();
 
+    // Add the std functions first
+    //  This is awkward and needs to be changed. Maybe add the ast nodes of the parsed file instead?
+    let std_path = "C:\\Users\\marwi\\dev\\Isi\\std\\core.isi";
+    let mut std_file = File::open(&std_path);
+    match &mut std_file {
+        Ok(f) => f.read_to_string(&mut file_buffer).unwrap(),
+        Err(_) => {
+            print_compile_error(&format!("Standard Lib not found under: {}", std_path));
+            exit(1);
+        }
+    };
+
     let bytes_read = match &mut file {
         Ok(f) => f.read_to_string(&mut file_buffer).unwrap(),
         Err(_) => {
@@ -73,9 +87,12 @@ fn main() {
     app.content = Arc::from(file_buffer);
     app.tokens = scan(&mut app);
     parse(&mut app);
+    // Reset the index so the generator can use it
+    app.index = 0;
+    generator(&mut app);
     // for node in &app.nodes {
     //     println!("{:#?}", node);
     // }
-    // let func = app.get_function_from_map("print_int");
+    // let func = app.get_function_from_map("print");
     // println!("{func:?}");
 }

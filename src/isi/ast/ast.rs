@@ -45,6 +45,7 @@ pub enum DataType {
     Float,
     String,
     Bool,
+    Nil,
 
     NONE,
 }
@@ -56,6 +57,7 @@ impl Display for DataType {
             DataType::Float => write!(f, "floating_point_number"),
             DataType::String => write!(f, "string_literal"),
             DataType::Bool => write!(f, "boolean"),
+            DataType::Nil => write!(f, "nil"),
             DataType::NONE => write!(f, "none"),
         }
     }
@@ -109,6 +111,7 @@ impl Token {
         match self.t_value.as_ref() {
             "int" => true,
             "string" => true,
+            "nil" => true,
             _ => false,
         }
     }
@@ -119,6 +122,7 @@ impl Token {
             "int" => DataType::Int,
             "string" => DataType::String,
             "float" => DataType::Float,
+            "nil" => DataType::Nil,
 
             _ => DataType::NONE,
         };
@@ -255,6 +259,8 @@ pub struct App {
     pub nodes: Vec<IsiNode>,
     pub function_table: HashMap<Arc<str>, Function>,
     pub variable_table: HashMap<Arc<str>, Variable>,
+
+    pub generated_code: String,
 }
 
 impl App {
@@ -299,12 +305,19 @@ impl App {
         }
     }
 
-    /// Push a Node of type `IsiNode` in the ast
-    pub fn push_node<N>(&mut self, node: N)
-    where
-        N: Into<IsiNode>,
-    {
-        self.nodes.push(node.into());
+    pub fn get_node(&self) -> IsiNode {
+        let node = self.nodes.get(self.index);
+
+        match node {
+            Some(n) => return n.clone(),
+            None => {
+                print_compile_error(&format!(
+                    "Was unable to retrieve node at index: {}",
+                    self.index
+                ));
+                exit(1);
+            }
+        }
     }
 
     pub fn get_function_from_map(&mut self, name: &str) -> Function {
