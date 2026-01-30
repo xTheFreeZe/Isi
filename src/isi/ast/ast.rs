@@ -63,6 +63,21 @@ impl Display for DataType {
     }
 }
 
+impl DataType {
+    pub fn to_c_string_type(&self) -> String {
+        match self {
+            DataType::Int => String::from("int"),
+            DataType::Float => String::from("float"),
+            DataType::String => String::from("char*"),
+            DataType::Nil => String::from("void"),
+            _ => {
+                print_compile_error(&format!("Tried to cast `{}` to a c data type", self));
+                exit(1);
+            }
+        }
+    }
+}
+
 impl IsiToken {
     pub fn to_data_type(&self) -> DataType {
         let data_type = match self {

@@ -1,5 +1,6 @@
 use crate::isi::{
     ast::ast::{App, IsiNode},
+    generator::gen_function::gen_builtin_function,
     util::util::print_compile_error,
 };
 
@@ -12,10 +13,18 @@ pub fn generator(app: &mut App) {
                 let variable_body = *full_variable.v_node;
                 let _variable_body_code = match variable_body {
                     IsiNode::IsiFunctionDecl(function_decl) => {
-                        println!("Got  a function decl -> {}", function_decl.name)
+                        let full_function = app.get_function_from_map(&function_decl.name);
+                        let generated_function: String;
+                        if full_function.is_builtin {
+                            generated_function = gen_builtin_function(&full_function);
+                        } else {
+                            generated_function = String::from("[NOT YET IMPLEMENTED]");
+                        }
+
+                        println!("{generated_function}");
                     }
                     IsiNode::IsiExpression(expression) => {
-                        println!("Got  an expression -> {}", expression.e_value)
+                        println!("Got an expression -> {}", expression.e_value)
                     }
                     _ => {
                         print_compile_error(&format!(
