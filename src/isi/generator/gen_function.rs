@@ -34,6 +34,9 @@ pub fn gen_builtin_function(function: &Function) -> String {
     let mut code = String::new();
 
     code += &gen_function_sig(function);
+    code += "{\n";
+    code += &function.builtin_code;
+    code += "\n}";
 
     code
 }

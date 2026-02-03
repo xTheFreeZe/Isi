@@ -1,1 +1,2 @@
-print_string -> c ([x: string] :nil) = $printf("%s", x)$
+print_string -> c ([x: string] :nil) = $ printf("%s", x);$
+print_int -> c ([x: int] :nil) = $ printf("%d", x);$
