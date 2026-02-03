@@ -65,7 +65,7 @@ pub fn gen_function_call(call: &FunctionCall) -> String {
     code += call.function.name.as_ref();
     code += "(";
     code += &gen_call_args(&call.arguments);
-    code += ");";
+    code += ");\n";
 
     code
 }
