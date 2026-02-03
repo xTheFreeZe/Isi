@@ -5,4 +5,5 @@ edition = "2024"
 
 [dependencies]
 colored = "3.0.0"
+execute = "0.2.15"
 prejsx_math = "0.1.0"

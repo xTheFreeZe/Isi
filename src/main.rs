@@ -1,3 +1,5 @@
+use execute::Execute;
+
 use crate::isi::ast::ast::App;
 use crate::isi::generator::generator::generator;
 use crate::isi::parser::parser::parse;
@@ -6,9 +8,9 @@ use crate::isi::util::util::print_compile_error;
 use std::collections::HashMap;
 use std::env;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Write};
 use std::path::Path;
-use std::process::exit;
+use std::process::{Command, exit};
 use std::sync::Arc;
 
 pub mod isi;
@@ -99,4 +101,35 @@ fn main() {
     // }
     // let func = app.get_function_from_map("print");
     // println!("{func:?}");
+
+    // C File Stuff
+    let c_path = format!("{}.c", app.file_name.as_ref());
+    let exe_path_result = c_path.split_once(".");
+    if exe_path_result.is_none() {
+        eprintln!("Was unable to split file while generating executable name");
+        exit(1);
+    }
+    let exe_path = exe_path_result.unwrap().0;
+    let c_file = File::create(&c_path);
+    if let Ok(mut file) = c_file {
+        let write_result = file.write(app.generated_code.as_bytes());
+        if write_result.is_err() {
+            eprintln!("Was unable to write to file");
+            exit(1);
+        }
+    }
+
+    let mut command = Command::new("gcc");
+    command.arg(&c_path);
+    command.arg("-o");
+    command.arg(exe_path);
+
+    if command.execute_check_exit_status_code(0).is_err() {
+        eprintln!("Was unable to compile generated c file using gcc");
+        exit(1);
+    }
+
+    Command::new(format!("./{}", exe_path))
+        .status()
+        .expect("Can't run executable");
 }

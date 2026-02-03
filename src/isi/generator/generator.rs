@@ -1,10 +1,13 @@
 use crate::isi::{
     ast::ast::{App, IsiNode},
-    generator::gen_function::gen_builtin_function,
+    generator::gen_function::{gen_builtin_function, gen_function_call},
     util::util::print_compile_error,
 };
 
 pub fn generator(app: &mut App) {
+    let mut main_code = String::new();
+    // TODO: Track imports and see if this is even needed...!
+    app.generated_code += "#include <stdio.h>\n";
     while app.index < app.nodes.len() {
         let node = app.get_node();
         match node {
@@ -21,7 +24,7 @@ pub fn generator(app: &mut App) {
                             generated_function = String::from("[NOT YET IMPLEMENTED]");
                         }
 
-                        println!("{generated_function}");
+                        app.generated_code += &generated_function;
                     }
                     IsiNode::IsiExpression(expression) => {
                         println!("Got an expression -> {}", expression.e_value)
@@ -34,6 +37,10 @@ pub fn generator(app: &mut App) {
                     }
                 };
             }
+            IsiNode::IsiFunctionCall(function_call) => {
+                let generated_call = gen_function_call(&function_call);
+                main_code += &generated_call;
+            }
             _ => {
                 print_compile_error(&format!("Unknown head node in generator: {:#?}", node));
             }
@@ -41,5 +48,6 @@ pub fn generator(app: &mut App) {
         app.index += 1;
     }
 
-    println!("Gen Code: \n{}", app.generated_code)
+    let complete_main = format!("int main() {{\n {} \n}}", main_code);
+    app.generated_code += &complete_main;
 }

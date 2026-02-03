@@ -1,4 +1,7 @@
-use crate::isi::ast::ast::{Function, FunctionParam};
+use crate::isi::{
+    ast::ast::{Function, FunctionCall, FunctionCallArgument, FunctionParam},
+    generator::gen_utils::gen_proper_type_code,
+};
 
 fn gen_function_params(params: &Option<Vec<FunctionParam>>) -> String {
     let mut code = String::new();
@@ -8,6 +11,21 @@ fn gen_function_params(params: &Option<Vec<FunctionParam>>) -> String {
             code += &format!("{} {}", param_type, param.name.as_ref());
 
             if index + 1 != p.len() {
+                code += ", "
+            }
+        }
+    }
+    code
+}
+
+fn gen_call_args(args: &Option<Vec<FunctionCallArgument>>) -> String {
+    let mut code = String::new();
+
+    if let Some(a) = args {
+        for (index, arg) in a.iter().enumerate() {
+            let argument = gen_proper_type_code(&arg.name.as_ref(), arg.a_type);
+            code += &argument;
+            if index + 1 != a.len() {
                 code += ", "
             }
         }
@@ -36,7 +54,18 @@ pub fn gen_builtin_function(function: &Function) -> String {
     code += &gen_function_sig(function);
     code += "{\n";
     code += &function.builtin_code;
-    code += "\n}";
+    code += "\n}\n";
+
+    code
+}
+
+pub fn gen_function_call(call: &FunctionCall) -> String {
+    let mut code = String::new();
+
+    code += call.function.name.as_ref();
+    code += "(";
+    code += &gen_call_args(&call.arguments);
+    code += ");";
 
     code
 }
