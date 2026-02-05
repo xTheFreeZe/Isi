@@ -1,4 +1,2 @@
 /target
-main.isi
-*.isi.c
-/main
+/main*

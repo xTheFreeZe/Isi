@@ -1,5 +1,6 @@
 use crate::isi::{
     ast::ast::{App, DataType, FunctionCall, FunctionCallArgument, IsiNode, IsiToken, Token},
+    parser::expression::get_variable,
     util::util::print_compile_error,
 };
 
@@ -42,7 +43,7 @@ pub fn parse_call(app: &mut App) -> IsiNode {
             let expected = params[i].p_type;
             let got: DataType;
             if a.t_type == IsiToken::VARIABLE {
-                let var = app.get_variable_from_map(&a.t_value);
+                let var = get_variable(&a.t_value, app);
                 got = var.v_type;
             } else {
                 got = a.t_type.to_data_type();

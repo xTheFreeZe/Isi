@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::isi::{
     ast::ast::{App, DataType, Function, FunctionDecl, FunctionParam, IsiNode, IsiToken},
     parser::{
-        expression::{get_expression, parse_expression},
+        expression::{get_expression, is_variable_accessable, parse_expression},
         parser::parse_variable,
     },
     util::util::print_compile_error,
@@ -43,6 +43,10 @@ pub fn parse_function(app: &mut App, is_builtin: bool) -> (IsiNode, DataType) {
 
     let f_return_type = return_type.to_data_type();
     function.return_type = f_return_type;
+    app.push_function_sig_into_map(
+        function.name.clone(),
+        (function.params.clone(), function.return_type),
+    );
 
     app.next();
     if is_builtin {
@@ -164,8 +168,8 @@ fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
                 app.index = expression.1;
             }
             IsiToken::VARIABLE => {
-                let is_known_variable = app.variable_table.contains_key(&token.t_value);
-                // Only parse the `new` variable, if it isn't already in the variable table
+                let is_known_variable = is_variable_accessable(&token.t_value, app);
+                // Only parse the `new` variable, if we did not know about bit already
                 // TODO: This is kind of stupid I guess
                 if !is_known_variable {
                     let next_token = app.peek_next();
@@ -195,7 +199,6 @@ fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
     // Go over the `}`
 
     app.next();
-
     let latest_data_type = retrieve_last_data_type(&mut body);
     (body, latest_data_type)
 }

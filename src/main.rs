@@ -27,6 +27,7 @@ fn main() {
         nodes: Vec::new(),
         current_var_str: String::new(),
         function_table: HashMap::new(),
+        function_sig_table: HashMap::new(),
         variable_table: HashMap::new(),
         generated_code: String::new(),
     };
@@ -104,23 +105,6 @@ fn main() {
 
     // C File Stuff
     let c_path = format!("{}.c", app.file_name.as_ref());
-    // let exe_path_result: Option<(&str, &str)> = if env::consts::OS == "windows" {
-    //     let exe_path_after_slash = c_path.split_once("/");
-    //     let mut wow: Option<(&str, &str)>;
-    //     if let Some(path) = exe_path_after_slash {
-    //         wow = path.1.split_once(".");
-    //     } else {
-    //         eprintln!("Was unable to generate windows executable name");
-    //         exit(1);
-    //     }
-    //     wow
-    // } else {
-    //     c_path.split_once(".")
-    // };
-    // if exe_path_result.is_none() {
-    //     eprintln!("Was unable to split file while generating executable name");
-    //     exit(1);
-    // }
     let stem = Path::new(&c_path)
         .file_stem()
         .and_then(|s| s.to_str())
@@ -142,8 +126,6 @@ fn main() {
             exit(1);
         }
     }
-
-    println!("{exe_name}");
 
     let mut command = Command::new("gcc");
     command.arg(&c_path);

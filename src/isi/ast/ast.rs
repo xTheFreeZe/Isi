@@ -273,6 +273,7 @@ pub struct App {
     pub tokens: Vec<Token>,
     pub nodes: Vec<IsiNode>,
     pub function_table: HashMap<Arc<str>, Function>,
+    pub function_sig_table: HashMap<Arc<str>, (Option<Vec<FunctionParam>>, DataType)>,
     pub variable_table: HashMap<Arc<str>, Variable>,
 
     pub generated_code: String,
@@ -335,7 +336,7 @@ impl App {
         }
     }
 
-    pub fn get_function_from_map(&mut self, name: &str) -> Function {
+    pub fn get_function_from_map(&self, name: &str) -> Function {
         if let Some(f) = self.function_table.get(name) {
             return f.clone();
         } else {
@@ -348,7 +349,26 @@ impl App {
         self.function_table.insert(function.name.clone(), function);
     }
 
-    pub fn get_variable_from_map(&mut self, name: &str) -> Variable {
+    pub fn push_function_sig_into_map(
+        &mut self,
+        name: Arc<str>,
+        sig: (Option<Vec<FunctionParam>>, DataType),
+    ) {
+        self.function_sig_table.insert(name, (sig.0, sig.1));
+    }
+
+    pub fn get_function_sig_from_map(
+        &self,
+        name: &str,
+    ) -> Option<(Option<Vec<FunctionParam>>, DataType)> {
+        if let Some(f) = self.function_sig_table.get(name) {
+            return Some(f.clone());
+        } else {
+            None
+        }
+    }
+
+    pub fn get_variable_from_map(&self, name: &str) -> Variable {
         if let Some(f) = self.variable_table.get(name) {
             return f.clone();
         } else {

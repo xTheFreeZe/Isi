@@ -90,6 +90,7 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
                     (IsiNode::EmptyNode, DataType::NONE)
                 };
             var.v_type = function_type;
+            app.current_var_str = String::from("");
             function_node
         }
         // x -> 10

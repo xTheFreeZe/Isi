@@ -1,7 +1,7 @@
-use std::sync::Arc;
+use std::{process::exit, sync::Arc};
 
 use crate::isi::{
-    ast::ast::{App, DataType, Expression, IsiToken, Token},
+    ast::ast::{App, DataType, Expression, IsiNode, IsiToken, Token, Variable},
     util::util::print_compile_error,
 };
 use colored::Colorize;
@@ -78,7 +78,7 @@ pub fn parse_expression(app: &mut App, expression: &[Token]) -> Expression {
                 parsed_expression.e_length += 1;
             }
             IsiToken::VARIABLE => {
-                let var = app.get_variable_from_map(&piece.t_value);
+                let var = get_variable(&piece.t_value, app);
                 parsed_expression.e_value = var.v_name;
                 parsed_expression.e_type = var.v_type;
                 parsed_expression.e_length += 1;
@@ -136,3 +136,92 @@ fn eval_simple_math_expression(expression: &str) -> Option<String> {
         None
     }
 }
+
+pub fn get_variable(var_name: &str, app: &App) -> Variable {
+    // 1) locals / global vars (whatever is currently in the table)
+    if let Some(v) = app.variable_table.get(var_name) {
+        return v.clone();
+    }
+
+    // 2) parameters
+    if let Some((params, _ret_type)) = app.get_function_sig_from_map(&app.current_var_str) {
+        if let Some(params) = params {
+            if let Some(p) = params.iter().find(|p| p.name.as_ref() == var_name) {
+                return Variable {
+                    v_name: p.name.clone(),
+                    v_type: p.p_type,
+                    v_node: Box::new(IsiNode::EmptyNode),
+                };
+            }
+        }
+    }
+
+    print_compile_error(&format!(
+        "Unknown variable `{}` > NEW GET VARIABLE FUNCTION (bruuuh)",
+        var_name
+    ));
+    exit(1);
+}
+
+pub fn is_variable_accessable(var_name: &str, app: &App) -> bool {
+    if app.variable_table.contains_key(var_name) {
+        return true;
+    }
+
+    let params_option = app.get_function_sig_from_map(&app.current_var_str);
+
+    if params_option.is_none() {
+        return false;
+    }
+
+    let params = params_option.unwrap().0;
+
+    if let Some(p) = params {
+        if let Some(_) = p.into_iter().find(|p| p.name.as_ref() == var_name) {
+            return true;
+        }
+    }
+
+    false
+}
+
+// The new one...
+// pub fn get_variable(var_name: &str, app: &App) -> Variable {
+//     // 1) search locals first (variables with matching scope)
+//     if let Some(v) = app
+//         .variable_table
+//         .values()
+//         .find(|v| v.v_name == var_name && v.scope == app.current_var_str)
+//     {
+//         return v.clone();
+//     }
+
+//     // 2) search function parameters if we are inside a function
+//     if !app.current_var_str.is_empty() {
+//         if let Some((params_option, _ret_type)) = app.get_function_sig_from_map(&app.current_var_str)
+//         {
+//             if let Some(params) = params_option {
+//                 if let Some(p) = params.iter().find(|p| p.name.as_ref() == var_name) {
+//                     return Variable {
+//                         v_name: p.name.clone(),
+//                         v_type: p.p_type,
+//                         v_node: Box::new(IsiNode::EmptyNode),
+//                         scope: app.current_var_str.clone(),
+//                     };
+//                 }
+//             }
+//         }
+//     }
+
+//     // 3) search globals
+//     if let Some(v) = app
+//         .variable_table
+//         .values()
+//         .find(|v| v.v_name == var_name && v.scope.is_empty())
+//     {
+//         return v.clone();
+//     }
+
+//     print_compile_error(&format!("Unknown variable `{}`", var_name));
+//     exit(1);
+// }
