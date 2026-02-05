@@ -104,12 +104,36 @@ fn main() {
 
     // C File Stuff
     let c_path = format!("{}.c", app.file_name.as_ref());
-    let exe_path_result = c_path.split_once(".");
-    if exe_path_result.is_none() {
-        eprintln!("Was unable to split file while generating executable name");
-        exit(1);
-    }
-    let exe_path = exe_path_result.unwrap().0;
+    // let exe_path_result: Option<(&str, &str)> = if env::consts::OS == "windows" {
+    //     let exe_path_after_slash = c_path.split_once("/");
+    //     let mut wow: Option<(&str, &str)>;
+    //     if let Some(path) = exe_path_after_slash {
+    //         wow = path.1.split_once(".");
+    //     } else {
+    //         eprintln!("Was unable to generate windows executable name");
+    //         exit(1);
+    //     }
+    //     wow
+    // } else {
+    //     c_path.split_once(".")
+    // };
+    // if exe_path_result.is_none() {
+    //     eprintln!("Was unable to split file while generating executable name");
+    //     exit(1);
+    // }
+    let stem = Path::new(&c_path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or_else(|| {
+            eprintln!("Was unable to generate executable name");
+            std::process::exit(1);
+        });
+
+    let exe_name = if cfg!(windows) {
+        format!("{stem}.exe")
+    } else {
+        stem.to_string().replace(".isi", "")
+    };
     let c_file = File::create(&c_path);
     if let Ok(mut file) = c_file {
         let write_result = file.write(app.generated_code.as_bytes());
@@ -119,17 +143,19 @@ fn main() {
         }
     }
 
+    println!("{exe_name}");
+
     let mut command = Command::new("gcc");
     command.arg(&c_path);
     command.arg("-o");
-    command.arg(exe_path);
+    command.arg(&exe_name);
 
     if command.execute_check_exit_status_code(0).is_err() {
         eprintln!("Was unable to compile generated c file using gcc");
         exit(1);
     }
 
-    Command::new(format!("./{}", exe_path))
+    Command::new(format!("./{}", exe_name))
         .status()
         .expect("Can't run executable");
 }
