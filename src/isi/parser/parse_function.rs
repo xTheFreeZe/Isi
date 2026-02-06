@@ -4,6 +4,7 @@ use crate::isi::{
     ast::ast::{App, DataType, Function, FunctionDecl, FunctionParam, IsiNode, IsiToken},
     parser::{
         expression::{get_expression, is_variable_accessable, parse_expression},
+        parse_call::parse_call,
         parser::parse_variable,
     },
     util::util::print_compile_error,
@@ -187,6 +188,10 @@ fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
                     app.index = expression.1;
                 }
             }
+            IsiToken::LPAREN => {
+                let node = parse_call(app);
+                body.push(node);
+            }
             _ => {
                 print_compile_error(&format!(
                     "Unexpected token: `{}` with type `{:?}` in function body",
@@ -212,6 +217,10 @@ pub fn retrieve_last_data_type(body: &mut [IsiNode]) -> DataType {
         match element {
             IsiNode::IsiExpression(expression) => {
                 latest = expression.e_type;
+                break;
+            }
+            IsiNode::IsiFunctionCall(call) => {
+                latest = call.function.return_type;
                 break;
             }
             _ => {

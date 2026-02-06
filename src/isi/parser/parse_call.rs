@@ -1,3 +1,5 @@
+use std::{process::exit, sync::Arc};
+
 use crate::isi::{
     ast::ast::{App, DataType, FunctionCall, FunctionCallArgument, IsiNode, IsiToken, Token},
     parser::expression::get_variable,
@@ -10,7 +12,34 @@ pub fn parse_call(app: &mut App) -> IsiNode {
     let mut call = FunctionCall::default();
 
     app.expect(IsiToken::VARIABLE);
-    let function_name = app.get().t_value;
+    let mut function_name = app.get().t_value;
+
+    //TODO: This is really primitive and should be done better...
+    // It's also very limiting because this only allows for variables and or primitive data types
+    // Plus, we essentialy do the type checking twice...
+    let mut peek_next_type = app.peek_next().t_type;
+    if function_name.as_ref() == "print" {
+        if peek_next_type == IsiToken::RPAREN {
+            print_compile_error("Function `print` expects 1 argument(s), got 0");
+        }
+        if peek_next_type == IsiToken::VARIABLE {
+            peek_next_type = get_variable(&app.peek_next().t_value.as_ref(), app)
+                .v_type
+                .to_token_type();
+        }
+        function_name = match peek_next_type {
+            IsiToken::STRING => Arc::from("print_string"),
+            IsiToken::INTEGER => Arc::from("print_int"),
+            _ => {
+                print_compile_error(&format!(
+                    "Argument of type `{:?}` is not valid for function `print`",
+                    peek_next_type
+                ));
+                exit(1);
+            }
+        }
+    }
+
     let function = app.get_function_from_map(&function_name);
     call.function = function.clone();
 

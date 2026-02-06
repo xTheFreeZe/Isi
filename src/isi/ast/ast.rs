@@ -76,6 +76,25 @@ impl DataType {
             }
         }
     }
+
+    pub fn to_token_type(&self) -> IsiToken {
+        let data_type = match self {
+            DataType::Int => IsiToken::INTEGER,
+            DataType::Float => IsiToken::EMPTY,
+            DataType::String => IsiToken::STRING,
+            DataType::Bool => IsiToken::EMPTY,
+            DataType::Nil => IsiToken::EMPTY,
+            DataType::NONE => IsiToken::EMPTY,
+        };
+
+        if data_type == IsiToken::EMPTY {
+            print_compile_error(&format!(
+                "Tried to cast data type `{}` to a token type > Unknown",
+                self
+            ));
+        }
+        data_type
+    }
 }
 
 impl IsiToken {
