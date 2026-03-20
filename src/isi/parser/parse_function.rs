@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{process::exit, sync::Arc};
 
 use crate::isi::{
     ast::ast::{App, DataType, Function, FunctionDecl, FunctionParam, IsiNode, IsiToken},
@@ -20,7 +20,11 @@ use crate::isi::{
 ///
 /// The return type can than be easily used to assign a data type to the variable
 pub fn parse_function(app: &mut App, is_builtin: bool) -> (IsiNode, DataType) {
-    let mut function = Function::default();
+    let mut function = Function {
+        name: Arc::from(app.current_var_str.as_str()),
+        is_builtin: is_builtin,
+        ..Default::default()
+    };
     function.name = Arc::from(app.current_var_str.as_str());
     function.is_builtin = is_builtin;
 
@@ -148,11 +152,10 @@ fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
     while app.get().t_type != IsiToken::RBRACE {
         let token = app.get();
         match token.t_type {
-            IsiToken::KEYWORD => match token.t_value.as_ref() {
-                _ => {
-                    print_compile_error(&format!("Unknown keyword `{}`", token.t_value));
-                }
-            },
+            IsiToken::KEYWORD => {
+                print_compile_error(&format!("Unknown keyword `{}`", token.t_value));
+                exit(0);
+            }
             IsiToken::INTEGER => {
                 let expression = get_expression(app);
                 let int_expression = parse_expression(app, &expression.0);

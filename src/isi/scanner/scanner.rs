@@ -243,5 +243,5 @@ pub fn scan(app: &mut App) -> Vec<Token> {
         app.column_count += 1;
     }
 
-    return tokens;
+    tokens
 }

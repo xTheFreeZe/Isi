@@ -177,7 +177,10 @@ pub fn is_variable_accessable(var_name: &str, app: &App) -> bool {
     let params = params_option.unwrap().0;
 
     if let Some(p) = params {
-        if let Some(_) = p.into_iter().find(|p| p.name.as_ref() == var_name) {
+        if p.into_iter()
+            .find(|p| p.name.as_ref() == var_name)
+            .is_some()
+        {
             return true;
         }
     }

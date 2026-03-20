@@ -23,7 +23,7 @@ pub fn parse_call(app: &mut App) -> IsiNode {
             print_compile_error("Function `print` expects 1 argument(s), got 0");
         }
         if peek_next_type == IsiToken::VARIABLE {
-            peek_next_type = get_variable(&app.peek_next().t_value.as_ref(), app)
+            peek_next_type = get_variable(app.peek_next().t_value.as_ref(), app)
                 .v_type
                 .to_token_type();
         }
@@ -71,9 +71,11 @@ pub fn parse_call(app: &mut App) -> IsiNode {
         for (i, a) in arguments.iter().enumerate() {
             let expected = params[i].p_type;
             let got: DataType;
+            let mut is_variable = false;
             if a.t_type == IsiToken::VARIABLE {
                 let var = get_variable(&a.t_value, app);
                 got = var.v_type;
+                is_variable = true;
             } else {
                 got = a.t_type.to_data_type();
             }
@@ -86,6 +88,7 @@ pub fn parse_call(app: &mut App) -> IsiNode {
             let call_argument = FunctionCallArgument {
                 name: arguments[i].t_value.clone(),
                 a_type: got,
+                is_variable,
             };
             call_arguments.push(call_argument);
         }

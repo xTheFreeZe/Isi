@@ -48,15 +48,15 @@ fn main() {
     let file_path = Path::new(app.file_name.as_ref());
     let mut dir = env::current_dir().unwrap();
 
-    if let Some(parent) = file_path.parent() {
-        if !parent.as_os_str().is_empty() {
-            dir.push(parent);
-        }
+    if let Some(parent) = file_path.parent()
+        && !parent.as_os_str().is_empty()
+    {
+        dir.push(parent);
     }
 
     app.file_dir = Arc::from(dir.to_string_lossy());
 
-    let mut file = File::open(&file_path);
+    let mut file = File::open(file_path);
     let mut file_buffer = String::new();
 
     // Add the std functions first
@@ -66,7 +66,7 @@ fn main() {
     } else {
         "std/core.isi"
     };
-    let mut std_file = File::open(&std_path);
+    let mut std_file = File::open(std_path);
     match &mut std_file {
         Ok(f) => f.read_to_string(&mut file_buffer).unwrap(),
         Err(_) => {

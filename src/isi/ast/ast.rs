@@ -250,6 +250,7 @@ impl Default for Function {
 pub struct FunctionCallArgument {
     pub name: Arc<str>,
     pub a_type: DataType,
+    pub is_variable: bool,
 }
 
 #[derive(PartialEq, Debug, Clone)]

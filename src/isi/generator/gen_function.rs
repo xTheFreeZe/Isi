@@ -1,6 +1,7 @@
 use crate::isi::{
     ast::ast::{Function, FunctionCall, FunctionCallArgument, FunctionParam},
     generator::gen_utils::gen_proper_type_code,
+    util::util::print_compile_error,
 };
 
 fn gen_function_params(params: &Option<Vec<FunctionParam>>) -> String {
@@ -23,7 +24,11 @@ fn gen_call_args(args: &Option<Vec<FunctionCallArgument>>) -> String {
 
     if let Some(a) = args {
         for (index, arg) in a.iter().enumerate() {
-            let argument = gen_proper_type_code(&arg.name.as_ref(), arg.a_type);
+            let argument = if arg.is_variable {
+                arg.name.as_ref()
+            } else {
+                &gen_proper_type_code(arg.name.as_ref(), arg.a_type)
+            };
             code += &argument;
             if index + 1 != a.len() {
                 code += ", "
@@ -59,6 +64,19 @@ pub fn gen_builtin_function(function: &Function) -> String {
     code
 }
 
+pub fn gen_function(function: &Function) -> String {
+    let mut code = String::new();
+
+    code += &gen_function_sig(function);
+    code += "{\n";
+    if function.function_body.is_some() {
+        code += &gen_function_body(function);
+    }
+    code += "\n}\n";
+
+    code
+}
+
 pub fn gen_function_call(call: &FunctionCall) -> String {
     let mut code = String::new();
 
@@ -66,6 +84,24 @@ pub fn gen_function_call(call: &FunctionCall) -> String {
     code += "(";
     code += &gen_call_args(&call.arguments);
     code += ");\n";
+
+    code
+}
+
+/// Make sure the function has a body before calling this function
+fn gen_function_body(function: &Function) -> String {
+    let mut code = String::new();
+    let body = function.function_body.as_ref().unwrap();
+    for node in body {
+        match node {
+            crate::isi::ast::ast::IsiNode::IsiFunctionCall(function_call) => {
+                code += &gen_function_call(function_call);
+            }
+            _ => {
+                print_compile_error(&format!("Unknown node in function body: {:#?}", node));
+            }
+        }
+    }
 
     code
 }
