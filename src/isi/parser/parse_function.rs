@@ -216,7 +216,7 @@ fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
 pub fn retrieve_last_data_type(body: &mut [IsiNode]) -> DataType {
     body.reverse();
     let mut latest = DataType::NONE;
-    for element in body {
+    for element in body.iter().clone() {
         match element {
             IsiNode::IsiExpression(expression) => {
                 latest = expression.e_type;
@@ -231,5 +231,7 @@ pub fn retrieve_last_data_type(body: &mut [IsiNode]) -> DataType {
             }
         }
     }
+    // Reverse it again so the body isnt in reverse order
+    body.reverse();
     latest
 }

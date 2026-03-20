@@ -25,7 +25,7 @@ pub fn generator(app: &mut App) {
                         if full_function.is_builtin {
                             generated_function = gen_builtin_function(&full_function);
                         } else {
-                            generated_function = gen_function(&full_function);
+                            generated_function = gen_function(&full_function, app);
                         }
 
                         app.generated_code += &generated_function;
