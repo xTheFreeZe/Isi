@@ -41,6 +41,11 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
 
     let mut token = app.get();
     var.v_name = Arc::clone(&token.t_value);
+
+    if var.v_name.as_ref() == "main" {
+        print_compile_error("Variable name `main` can not be used");
+    }
+
     if !inside_function {
         app.current_var_str = Arc::clone(&token.t_value).to_string();
     }
