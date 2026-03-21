@@ -1,6 +1,6 @@
 use crate::isi::{
     ast::ast::{App, Function, FunctionCall, FunctionCallArgument, FunctionParam},
-    generator::{gen_utils::gen_proper_type_code, gen_variable::gen_variable_decl},
+    generator::{gen_utils::gen_proper_type_code, gen_variable::gen_simple_variable},
     parser::expression::get_variable,
     util::util::print_compile_error,
 };
@@ -94,13 +94,15 @@ fn gen_function_body(function: &Function, app: &App) -> String {
     let mut code = String::new();
     let body = function.function_body.as_ref().unwrap();
     for node in body {
+        // Safety: You only enter this loop when the body is filled, thus unwrapping here is fine
+        let is_last = body.last().unwrap() == node;
         match node {
             crate::isi::ast::ast::IsiNode::IsiVariableDecl(var_decl) => {
                 let full = get_variable(&var_decl.name.as_ref(), app);
                 let variable_body = *full.v_node;
                 match variable_body {
                     crate::isi::ast::ast::IsiNode::IsiExpression(expression) => {
-                        code += &gen_variable_decl(expression, &full.v_name.as_ref());
+                        code += &gen_simple_variable(expression, &full.v_name.as_ref());
                     }
                     _ => {
                         print_compile_error(&format!(
@@ -110,8 +112,16 @@ fn gen_function_body(function: &Function, app: &App) -> String {
                         ));
                     }
                 }
+                if is_last {
+                    // int x = 5;
+                    // return x;
+                    code += &format!("return {}; \n", var_decl.name.as_ref());
+                }
             }
             crate::isi::ast::ast::IsiNode::IsiFunctionCall(function_call) => {
+                if is_last {
+                    code += "return ";
+                }
                 code += &gen_function_call(function_call);
             }
             _ => {

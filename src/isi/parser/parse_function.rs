@@ -193,7 +193,7 @@ fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
             }
             IsiToken::LPAREN => {
                 let node = parse_call(app);
-                body.push(node);
+                body.push(node.0);
             }
             _ => {
                 print_compile_error(&format!(

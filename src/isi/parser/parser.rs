@@ -21,7 +21,7 @@ pub fn parse(app: &mut App) {
             }
             IsiToken::LPAREN => {
                 let node = parse_call(app);
-                app.nodes.push(node);
+                app.nodes.push(node.0);
             }
             _ => {
                 print_compile_error(&format!("Unexpected top level token `{}`", token.t_value));
@@ -92,7 +92,9 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
                     app.next();
                     parse_function(app, is_builtin_func)
                 } else {
-                    (IsiNode::EmptyNode, DataType::NONE)
+                    // This is a function call:
+                    // x -> (plus x x)
+                    parse_call(app)
                 };
             var.v_type = function_type;
             app.current_var_str = String::from("");

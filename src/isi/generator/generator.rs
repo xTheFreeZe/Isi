@@ -2,7 +2,7 @@ use crate::isi::{
     ast::ast::{App, IsiNode},
     generator::{
         gen_function::{gen_builtin_function, gen_function, gen_function_call},
-        gen_variable::gen_variable_decl,
+        gen_variable::{gen_function_call_variable, gen_simple_variable},
     },
     parser::expression::get_variable,
     util::util::print_compile_error,
@@ -32,7 +32,18 @@ pub fn generator(app: &mut App) {
                     }
                     IsiNode::IsiExpression(expression) => {
                         app.generated_code +=
-                            &gen_variable_decl(expression, &full_variable.v_name.as_ref());
+                            &gen_simple_variable(expression, &full_variable.v_name.as_ref());
+                    }
+                    IsiNode::IsiFunctionCall(call) => {
+                        // Eventually we need to move variables with no function to the top:
+                        // int result;
+                        // Then, in main:
+                        // result -> (plus 2 2)
+                        // app.generated_code +=
+                        //     &format!("{} ", call.function.return_type.to_c_string_type());
+                        // app.generated_code += &format!("{};", &full_variable.v_name.as_ref());
+                        main_code +=
+                            &gen_function_call_variable(&call, &full_variable.v_name.as_ref())
                     }
                     _ => {
                         print_compile_error(&format!(

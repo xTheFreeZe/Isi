@@ -6,7 +6,7 @@ use crate::isi::{
     util::util::print_compile_error,
 };
 
-pub fn parse_call(app: &mut App) -> IsiNode {
+pub fn parse_call(app: &mut App) -> (IsiNode, DataType) {
     // Skip the `(`
     app.next();
     let mut call = FunctionCall::default();
@@ -100,5 +100,6 @@ pub fn parse_call(app: &mut App) -> IsiNode {
 
     // Skip the `)` to close the function call
     app.next();
-    IsiNode::IsiFunctionCall(call)
+    let function_call_type = call.function.return_type;
+    (IsiNode::IsiFunctionCall(call), function_call_type)
 }
