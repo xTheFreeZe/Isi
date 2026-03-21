@@ -1,2 +1,4 @@
 print_string -> c ([x: string] :nil) = $ printf("%s\n", x);$
 print_int -> c ([x: int] :nil) = $ printf("%d\n", x);$
+
+plus -> c ([x: int y: int] :int) = $ return x + y; $

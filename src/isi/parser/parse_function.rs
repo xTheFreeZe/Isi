@@ -3,7 +3,7 @@ use std::{process::exit, sync::Arc};
 use crate::isi::{
     ast::ast::{App, DataType, Function, FunctionDecl, FunctionParam, IsiNode, IsiToken},
     parser::{
-        expression::{get_expression, is_variable_accessable, parse_expression},
+        expression::{get_expression, get_variable, is_variable_accessable, parse_expression},
         parse_call::parse_call,
         parser::parse_variable,
     },
@@ -72,7 +72,7 @@ pub fn parse_function(app: &mut App, is_builtin: bool) -> (IsiNode, DataType) {
             return_type.to_data_type(),
         );
     } else {
-        app.expect(IsiToken::LBRACE);
+        app.expect(IsiToken::LPAREN);
     }
     app.next();
 
@@ -149,7 +149,7 @@ fn parse_function_params(app: &mut App) -> Vec<FunctionParam> {
 
 fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
     let mut body: Vec<IsiNode> = Vec::new();
-    while app.get().t_type != IsiToken::RBRACE {
+    while app.get().t_type != IsiToken::RPAREN {
         let token = app.get();
         match token.t_type {
             IsiToken::KEYWORD => {
@@ -203,35 +203,25 @@ fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
             }
         }
     }
-    app.expect(IsiToken::RBRACE);
-    // Go over the `}`
+    app.expect(IsiToken::RPAREN);
+    // Go over the `)`
 
     app.next();
-    let latest_data_type = retrieve_last_data_type(&mut body);
+    let latest_data_type = retrieve_last_data_type(&mut body, app);
     (body, latest_data_type)
 }
 
-/// Starts at the end of the function body and goes back to the front, until it finds
-/// a Datatype, in which case, that is the latest
-pub fn retrieve_last_data_type(body: &mut [IsiNode]) -> DataType {
-    body.reverse();
-    let mut latest = DataType::NONE;
-    for element in body.iter().clone() {
+pub fn retrieve_last_data_type(body: &[IsiNode], app: &App) -> DataType {
+    for element in body.iter().rev() {
         match element {
-            IsiNode::IsiExpression(expression) => {
-                latest = expression.e_type;
-                break;
+            IsiNode::IsiExpression(expression) => return expression.e_type,
+            IsiNode::IsiFunctionCall(call) => return call.function.return_type,
+            IsiNode::IsiVariableDecl(decl) => {
+                let full = get_variable(&decl.name.as_ref(), app);
+                return full.v_type;
             }
-            IsiNode::IsiFunctionCall(call) => {
-                latest = call.function.return_type;
-                break;
-            }
-            _ => {
-                continue;
-            }
+            _ => continue,
         }
     }
-    // Reverse it again so the body isnt in reverse order
-    body.reverse();
-    latest
+    DataType::Nil
 }
