@@ -73,7 +73,7 @@ pub fn gen_function(function: &Function, app: &App) -> String {
     if function.function_body.is_some() {
         code += &gen_function_body(function, app);
     }
-    code += "\n}\n";
+    code += "}\n";
 
     code
 }
@@ -104,6 +104,9 @@ fn gen_function_body(function: &Function, app: &App) -> String {
                     crate::isi::ast::ast::IsiNode::IsiExpression(expression) => {
                         code += &gen_simple_variable(expression, &full.v_name.as_ref());
                     }
+                    crate::isi::ast::ast::IsiNode::IsiFunctionCall(call) => {
+                        code += &gen_function_call(&call);
+                    }
                     _ => {
                         print_compile_error(&format!(
                             "Unknown node in body of variable [currently in variable {}]: {:#?}",
@@ -123,6 +126,12 @@ fn gen_function_body(function: &Function, app: &App) -> String {
                     code += "return ";
                 }
                 code += &gen_function_call(function_call);
+            }
+            crate::isi::ast::ast::IsiNode::IsiExpression(expr) => {
+                code += &format!(
+                    "return {};\n",
+                    gen_proper_type_code(expr.e_value.as_ref(), expr.e_type)
+                );
             }
             _ => {
                 print_compile_error(&format!("Unknown node in function body: {:#?}", node));

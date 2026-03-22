@@ -173,7 +173,7 @@ fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
             }
             IsiToken::VARIABLE => {
                 let is_known_variable = is_variable_accessable(&token.t_value, app);
-                // Only parse the `new` variable, if we did not know about bit already
+                // Only parse the `new` variable, if we did not know them already
                 // TODO: This is kind of stupid I guess
                 if !is_known_variable {
                     let next_token = app.peek_next();

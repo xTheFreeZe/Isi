@@ -96,6 +96,7 @@ fn main() {
     parse(&mut app);
     // Reset the index so the generator can use it
     app.index = 0;
+    app.current_var_str = String::new();
     generator(&mut app);
     // for node in &app.nodes {
     //     println!("{:#?}", node);

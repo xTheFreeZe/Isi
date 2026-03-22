@@ -47,8 +47,9 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
     }
 
     if !inside_function {
-        app.current_var_str = Arc::clone(&token.t_value).to_string();
+        app.current_var_str = token.t_value.to_string();
     }
+
     app.next();
 
     app.expect(IsiToken::ARROW);
@@ -91,10 +92,21 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
                 if next.t_type == IsiToken::LBRACKET || next.t_type == IsiToken::COLON {
                     app.next();
                     parse_function(app, is_builtin_func)
-                } else {
+                } else if next.t_type == IsiToken::VARIABLE {
                     // This is a function call:
                     // x -> (plus x x)
-                    parse_call(app)
+                    let call_return = parse_call(app);
+
+                    if call_return.1 == DataType::Nil {
+                        print_compile_error(&format!(
+                            "Tried assigning a value of type `nil` to variable {}",
+                            var.v_name
+                        ));
+                    }
+
+                    call_return
+                } else {
+                    (IsiNode::EmptyNode, DataType::NONE)
                 };
             var.v_type = function_type;
             app.current_var_str = String::from("");
@@ -128,8 +140,9 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
 
     if expression == IsiNode::EmptyNode {
         print_compile_error(&format!(
-            "Case {} is not handeled yet for parsed variables",
-            token.t_value
+            "Case `{}{}` is not handeled yet for parsed variables",
+            token.t_value,
+            app.peek_next().t_value
         ));
     }
 

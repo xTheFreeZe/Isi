@@ -64,6 +64,6 @@ pub fn generator(app: &mut App) {
         app.index += 1;
     }
 
-    let complete_main = format!("int main() {{\n {} \n}}", main_code);
+    let complete_main = format!("int main() {{\n {} }}", main_code);
     app.generated_code += &complete_main;
 }

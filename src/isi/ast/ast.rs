@@ -83,7 +83,7 @@ impl DataType {
             DataType::Float => IsiToken::EMPTY,
             DataType::String => IsiToken::STRING,
             DataType::Bool => IsiToken::EMPTY,
-            DataType::Nil => IsiToken::EMPTY,
+            DataType::Nil => IsiToken::NIL,
             DataType::NONE => IsiToken::EMPTY,
         };
 
@@ -103,6 +103,7 @@ impl IsiToken {
             Self::INTEGER => DataType::Int,
             Self::STRING => DataType::String,
             Self::TRUE | Self::FALSE => DataType::Bool,
+            Self::NIL => DataType::Nil,
             _ => DataType::NONE,
         };
 
