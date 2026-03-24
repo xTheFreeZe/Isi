@@ -146,6 +146,22 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
         ));
     }
 
+    match &expression {
+        IsiNode::IsiFunctionDecl(decl) => {
+            if decl.name.is_empty() {
+                // This is a stupid bug where:
+                // If we are currently IN a function and that function has a variable that calls another function:
+                // func -> ((
+                //  x -> plus(2 2)
+                // ))
+                // The compiler will add another function decl with an empty name for some reason?!
+                // TODO: Fix this
+                return IsiNode::EmptyNode;
+            }
+        }
+        _ => {}
+    }
+
     var.v_node = Box::new(expression);
     let var_decl = VariableDecl {
         name: var.v_name.clone(),

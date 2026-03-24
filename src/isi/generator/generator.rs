@@ -11,6 +11,7 @@ use crate::isi::{
 pub fn generator(app: &mut App) {
     let mut main_code = String::new();
     // TODO: Track imports and see if this is even needed...!
+    dbg!(&app.nodes);
     app.generated_code += "#include <stdio.h>\n";
     while app.index < app.nodes.len() {
         let node = app.get_node();
@@ -56,6 +57,10 @@ pub fn generator(app: &mut App) {
             IsiNode::IsiFunctionCall(function_call) => {
                 let generated_call = gen_function_call(&function_call);
                 main_code += &generated_call;
+            }
+            IsiNode::EmptyNode => {
+                app.index += 1;
+                continue;
             }
             _ => {
                 print_compile_error(&format!("Unknown head node in generator: {:#?}", node));
