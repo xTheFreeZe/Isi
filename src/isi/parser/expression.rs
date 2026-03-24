@@ -144,7 +144,7 @@ pub fn get_variable(var_name: &str, app: &App) -> Variable {
     }
 
     // 2) parameters
-    if let Some((params, _ret_type)) = app.get_function_sig_from_map(&app.current_var_str) {
+    if let Some((params, _)) = app.get_function_sig_from_map(&app.current_var_str) {
         if let Some(params) = params {
             if let Some(p) = params.iter().find(|p| p.name.as_ref() == var_name) {
                 return Variable {
