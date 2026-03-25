@@ -98,7 +98,8 @@ pub fn parse_call(app: &mut App) -> (IsiNode, DataType) {
         call.arguments = Some(call_arguments);
     }
 
-    // Skip the `)` to close the function call
+    // The closing `)`
+    app.expect(IsiToken::RPAREN);
     app.next();
     let function_call_type = call.function.return_type;
     (IsiNode::IsiFunctionCall(call), function_call_type)

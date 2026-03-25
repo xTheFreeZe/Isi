@@ -11,13 +11,13 @@ use crate::isi::{
 pub fn generator(app: &mut App) {
     let mut main_code = String::new();
     // TODO: Track imports and see if this is even needed...!
-    dbg!(&app.nodes);
     app.generated_code += "#include <stdio.h>\n";
     while app.index < app.nodes.len() {
         let node = app.get_node();
         match node {
             IsiNode::IsiVariableDecl(variable_decl) => {
                 let full_variable = get_variable(variable_decl.name.as_ref(), app);
+                dbg!(&full_variable.v_node);
                 let variable_body = *full_variable.v_node;
                 match variable_body {
                     IsiNode::IsiFunctionDecl(function_decl) => {

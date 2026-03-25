@@ -80,9 +80,7 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
         ));
     }
 
-    let ttype = &token.t_type;
-
-    let expression: IsiNode = match ttype {
+    let expression: IsiNode = match token.t_type {
         IsiToken::LPAREN => {
             let next = app.peek_next();
 
@@ -156,7 +154,8 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
                 // ))
                 // The compiler will add another function decl with an empty name for some reason?!
                 // TODO: Fix this
-                return IsiNode::EmptyNode;
+                // return IsiNode::EmptyNode;
+                // dbg!(decl);
             }
         }
         _ => {}

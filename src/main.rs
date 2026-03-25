@@ -94,15 +94,19 @@ fn main() {
     app.content = Arc::from(file_buffer);
     app.tokens = scan(&mut app);
     parse(&mut app);
+
+    // for node in &app.nodes {
+    //     println!("{:#?}", node);
+    // }
+    // let func = app.get_function_from_map("myFunction");
+    // println!("{func:#?}");
+    // let var = app.get_variable_from_map("number");
+    // println!("{var:#?}");
+
     // Reset the index so the generator can use it
     app.index = 0;
     app.current_var_str = String::new();
     generator(&mut app);
-    // for node in &app.nodes {
-    //     println!("{:#?}", node);
-    // }
-    // let func = app.get_function_from_map("print");
-    // println!("{func:?}");
 
     // C File Stuff
     let c_path = format!("{}.c", app.file_name.as_ref());
