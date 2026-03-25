@@ -20,13 +20,12 @@ use crate::isi::{
 ///
 /// The return type can than be easily used to assign a data type to the variable
 pub fn parse_function(app: &mut App, is_builtin: bool) -> (IsiNode, DataType) {
+    let function_name_captured = app.current_var_str.clone();
     let mut function = Function {
-        name: Arc::from(app.current_var_str.as_str()),
-        is_builtin: is_builtin,
+        name: Arc::from(function_name_captured.as_str()),
+        is_builtin,
         ..Default::default()
     };
-    function.name = Arc::from(app.current_var_str.as_str());
-    function.is_builtin = is_builtin;
 
     // This check is necessary because the [...] might have been omitted
     if app.get().t_type == IsiToken::LBRACKET {
@@ -97,7 +96,7 @@ pub fn parse_function(app: &mut App, is_builtin: bool) -> (IsiNode, DataType) {
 
     app.push_function_into_map(function);
     let function_decl = FunctionDecl {
-        name: Arc::from(app.current_var_str.as_str()),
+        name: Arc::from(function_name_captured.as_str()),
     };
     (
         IsiNode::IsiFunctionDecl(function_decl),

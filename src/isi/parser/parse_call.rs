@@ -30,6 +30,7 @@ pub fn parse_call(app: &mut App) -> (IsiNode, DataType) {
         function_name = match peek_next_type {
             IsiToken::STRING => Arc::from("print_string"),
             IsiToken::INTEGER => Arc::from("print_int"),
+            IsiToken::BOOL => Arc::from("print_bool"),
             _ => {
                 print_compile_error(&format!(
                     "Argument of type `{:?}` is not valid for function `print`",

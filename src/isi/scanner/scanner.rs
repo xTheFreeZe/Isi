@@ -109,6 +109,14 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                 });
                 chars.next();
             }
+            '/' => {
+                tokens.push(Token {
+                    t_value: Arc::from("/"),
+                    t_type: IsiToken::SLASH,
+                    ..default_token(app)
+                });
+                chars.next();
+            }
             '$' => {
                 let mut full_str = String::new();
                 chars.next();

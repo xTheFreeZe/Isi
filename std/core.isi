@@ -1,4 +1,19 @@
 print_string -> c ([x: string] :nil) = $ printf("%s\n", x);$
 print_int -> c ([x: int] :nil) = $ printf("%d\n", x);$
+print_bool -> c ([x: bool] :nil) = $
+    printf("%s\n", x ? "true" : "false");
+$
 
 plus -> c ([x: int y: int] :int) = $ return x + y; $
+minus -> c ([x: int y: int] :int) = $ return x - y; $
+mul   -> c ([x: int y: int] :int) = $ return x * y; $
+div   -> c ([x: int y: int] :int) = $ return x / y; $
+mod   -> c ([x: int y: int] :int) = $ return x % y; $
+
+eq    -> c ([x: int y: int] :bool) = $ return x == y; $
+gt    -> c ([x: int y: int] :bool) = $ return x > y; $
+lt    -> c ([x: int y: int] :bool) = $ return x < y; $
+gte   -> c ([x: int y: int] :bool) = $ return x >= y; $
+lte   -> c ([x: int y: int] :bool) = $ return x <= y; $
+
+string_len -> c ([s: string] :int) = $ return strlen(s); $

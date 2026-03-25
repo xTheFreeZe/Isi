@@ -29,6 +29,7 @@ pub enum IsiToken {
     INTEGER,
     KEYWORD,
     STRING,
+    BOOL,
     TRUE,
     FALSE,
     NIL,
@@ -69,6 +70,7 @@ impl DataType {
             DataType::Int => String::from("int"),
             DataType::Float => String::from("float"),
             DataType::String => String::from("char*"),
+            DataType::Bool => String::from("int"),
             DataType::Nil => String::from("void"),
             _ => {
                 print_compile_error(&format!("Tried to cast `{}` to a c data type", self));
@@ -82,7 +84,7 @@ impl DataType {
             DataType::Int => IsiToken::INTEGER,
             DataType::Float => IsiToken::EMPTY,
             DataType::String => IsiToken::STRING,
-            DataType::Bool => IsiToken::EMPTY,
+            DataType::Bool => IsiToken::BOOL,
             DataType::Nil => IsiToken::NIL,
             DataType::NONE => IsiToken::EMPTY,
         };
@@ -146,6 +148,7 @@ impl Token {
         match self.t_value.as_ref() {
             "int" => true,
             "string" => true,
+            "bool" => true,
             "nil" => true,
             _ => false,
         }
@@ -156,6 +159,7 @@ impl Token {
         let data_type = match self.t_value.as_ref() {
             "int" => DataType::Int,
             "string" => DataType::String,
+            "bool" => DataType::Bool,
             "float" => DataType::Float,
             "nil" => DataType::Nil,
 

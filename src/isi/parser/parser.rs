@@ -88,6 +88,9 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
             // main -> ([] :int) turns into main -> ( :int )
             let (function_node, function_type) =
                 if next.t_type == IsiToken::LBRACKET || next.t_type == IsiToken::COLON {
+                    if inside_function {
+                        print_compile_error("Can not create a function inside a function");
+                    }
                     app.next();
                     parse_function(app, is_builtin_func)
                 } else if next.t_type == IsiToken::VARIABLE {
@@ -108,6 +111,7 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
                 };
             var.v_type = function_type;
             app.current_var_str = String::from("");
+            // dbg!(&function_node, &function_type);
             function_node
         }
         // x -> 10

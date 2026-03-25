@@ -17,7 +17,6 @@ pub fn generator(app: &mut App) {
         match node {
             IsiNode::IsiVariableDecl(variable_decl) => {
                 let full_variable = get_variable(variable_decl.name.as_ref(), app);
-                dbg!(&full_variable.v_node);
                 let variable_body = *full_variable.v_node;
                 match variable_body {
                     IsiNode::IsiFunctionDecl(function_decl) => {

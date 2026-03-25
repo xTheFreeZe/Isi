@@ -105,7 +105,14 @@ fn gen_function_body(function: &Function, app: &App) -> String {
                         code += &gen_simple_variable(expression, &full.v_name.as_ref());
                     }
                     crate::isi::ast::ast::IsiNode::IsiFunctionCall(call) => {
-                        code += &gen_function_call(&call);
+                        let call_code = &gen_function_call(&call);
+
+                        code += &format!(
+                            "{} {} = {}",
+                            call.function.return_type.to_c_string_type(),
+                            var_decl.name,
+                            call_code
+                        );
                     }
                     _ => {
                         print_compile_error(&format!(
