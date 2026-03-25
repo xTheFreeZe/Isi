@@ -137,6 +137,14 @@ pub fn scan(app: &mut App) -> Vec<Token> {
                     ..default_token(app)
                 });
             }
+            '?' => {
+                tokens.push(Token {
+                    t_value: Arc::from("?"),
+                    t_type: IsiToken::QUESTION,
+                    ..default_token(app)
+                });
+                chars.next();
+            }
             '>' => {
                 tokens.push(Token {
                     t_value: Arc::from(">"),

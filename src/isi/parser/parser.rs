@@ -4,6 +4,7 @@ use crate::isi::{
     ast::ast::{App, DataType, IsiNode, IsiToken, Variable, VariableDecl},
     parser::{
         expression::{get_expression, parse_expression},
+        extras::parse_match,
         parse_call::parse_call,
         parse_function::parse_function,
     },
@@ -22,6 +23,10 @@ pub fn parse(app: &mut App) {
             IsiToken::LPAREN => {
                 let node = parse_call(app);
                 app.nodes.push(node.0);
+            }
+            IsiToken::QUESTION => {
+                let node = parse_match(app);
+                app.nodes.push(node);
             }
             _ => {
                 print_compile_error(&format!("Unexpected top level token `{}`", token.t_value));
@@ -171,4 +176,48 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
     };
     app.push_variable_into_map(var);
     IsiNode::IsiVariableDecl(var_decl)
+}
+
+pub fn parse_until(app: &mut App, ttype: IsiToken) -> Vec<IsiNode> {
+    let mut nodes = Vec::new();
+    while app.get().t_type != ttype {
+        let token = app.get();
+        match token.t_type {
+            IsiToken::INTEGER => {
+                let expression = get_expression(app);
+                let int_expression = parse_expression(app, &expression.0);
+                nodes.push(IsiNode::IsiExpression(int_expression));
+                app.index = expression.1;
+            }
+            IsiToken::STRING => {
+                let expression = get_expression(app);
+                let string_expression = parse_expression(app, &expression.0);
+                nodes.push(IsiNode::IsiExpression(string_expression));
+                app.index = expression.1;
+            }
+            IsiToken::VARIABLE => {
+                let expression = get_expression(app);
+                let variable_expression = parse_expression(app, &expression.0);
+                nodes.push(IsiNode::IsiExpression(variable_expression));
+
+                app.index = expression.1;
+            }
+            IsiToken::LPAREN => {
+                let node = parse_call(app);
+                nodes.push(node.0);
+            }
+            IsiToken::QUESTION => {
+                let node = parse_match(app);
+                nodes.push(node);
+            }
+            _ => {
+                print_compile_error(&format!(
+                    "Unexpected token: `{}` with type `{:?}` in function body [parse_until]",
+                    token.t_value, token.t_type
+                ));
+            }
+        }
+    }
+
+    nodes
 }

@@ -1,9 +1,10 @@
-use std::{process::exit, sync::Arc};
+use std::sync::Arc;
 
 use crate::isi::{
     ast::ast::{App, DataType, Function, FunctionDecl, FunctionParam, IsiNode, IsiToken},
     parser::{
         expression::{get_expression, get_variable, is_variable_accessable, parse_expression},
+        extras::parse_match,
         parse_call::parse_call,
         parser::parse_variable,
     },
@@ -148,15 +149,11 @@ fn parse_function_params(app: &mut App) -> Vec<FunctionParam> {
     params
 }
 
-fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
+pub fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
     let mut body: Vec<IsiNode> = Vec::new();
     while app.get().t_type != IsiToken::RPAREN {
         let token = app.get();
         match token.t_type {
-            IsiToken::KEYWORD => {
-                print_compile_error(&format!("Unknown keyword `{}`", token.t_value));
-                exit(0);
-            }
             IsiToken::INTEGER => {
                 let expression = get_expression(app);
                 let int_expression = parse_expression(app, &expression.0);
@@ -195,6 +192,10 @@ fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
             IsiToken::LPAREN => {
                 let node = parse_call(app);
                 body.push(node.0);
+            }
+            IsiToken::QUESTION => {
+                let node = parse_match(app);
+                body.push(node);
             }
             _ => {
                 print_compile_error(&format!(

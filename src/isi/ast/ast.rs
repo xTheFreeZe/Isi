@@ -132,7 +132,7 @@ impl IsiToken {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Token {
     pub t_value: Arc<str>,
     pub t_type: IsiToken,
@@ -274,6 +274,31 @@ impl Default for FunctionCall {
 }
 
 #[derive(PartialEq, Debug, Clone)]
+pub struct MatchPattern {
+    pub pattern: Token,
+    pub pattern_type: DataType,
+    pub result: Vec<IsiNode>,
+    pub result_type: DataType,
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct MatchStatement {
+    pub input: Expression,
+    pub input_type: DataType,
+    pub patterns: Vec<MatchPattern>,
+}
+
+impl Default for MatchStatement {
+    fn default() -> Self {
+        Self {
+            input: Expression::default(),
+            input_type: DataType::NONE,
+            patterns: Default::default(),
+        }
+    }
+}
+
+#[derive(PartialEq, Debug, Clone)]
 pub enum IsiNode {
     IsiExpression(Expression),
     IsiVariableDecl(VariableDecl),
@@ -281,6 +306,7 @@ pub enum IsiNode {
     IsiFunctionDecl(FunctionDecl),
     IsiFunction(Function),
     IsiFunctionCall(FunctionCall),
+    IsiMatchStatement(MatchStatement),
 
     EmptyNode,
 }
