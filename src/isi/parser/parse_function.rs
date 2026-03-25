@@ -64,7 +64,7 @@ pub fn parse_function(app: &mut App, is_builtin: bool) -> (IsiNode, DataType) {
 
         app.push_function_into_map(function);
         let function_decl = FunctionDecl {
-            name: Arc::from(app.current_var_str.as_str()),
+            name: Arc::from(function_name_captured.as_str()),
         };
         return (
             IsiNode::IsiFunctionDecl(function_decl),
@@ -89,8 +89,10 @@ pub fn parse_function(app: &mut App, is_builtin: bool) -> (IsiNode, DataType) {
 
     if latest_expression_type != f_return_type {
         print_compile_error(&format!(
-            "Mismatched types: Function `{}` expexted `{}`, found `{}`",
-            app.current_var_str, f_return_type, latest_expression_type
+            "Mismatched return types: Function `{}` expexted `{}`, found `{}`",
+            function_name_captured.as_str(),
+            f_return_type,
+            latest_expression_type
         ));
     }
 

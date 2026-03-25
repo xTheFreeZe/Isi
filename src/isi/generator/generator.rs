@@ -12,6 +12,7 @@ pub fn generator(app: &mut App) {
     let mut main_code = String::new();
     // TODO: Track imports and see if this is even needed...!
     app.generated_code += "#include <stdio.h>\n";
+    app.generated_code += "#include <string.h>\n";
     while app.index < app.nodes.len() {
         let node = app.get_node();
         match node {

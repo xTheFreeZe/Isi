@@ -156,10 +156,7 @@ pub fn get_variable(var_name: &str, app: &App) -> Variable {
         }
     }
 
-    print_compile_error(&format!(
-        "Unknown variable `{}` > NEW GET VARIABLE FUNCTION (bruuuh)",
-        var_name
-    ));
+    print_compile_error(&format!("Unknown variable `{}` ", var_name));
     exit(1);
 }
 
