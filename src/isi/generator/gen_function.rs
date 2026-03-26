@@ -1,6 +1,9 @@
 use crate::isi::{
     ast::ast::{App, Function, FunctionCall, FunctionCallArgument, FunctionParam},
-    generator::{gen_utils::gen_proper_type_code, gen_variable::gen_simple_variable},
+    generator::{
+        gen_extras::gen_match_statement, gen_utils::gen_proper_type_code,
+        gen_variable::gen_simple_variable,
+    },
     parser::expression::get_variable,
     util::util::print_compile_error,
 };
@@ -65,7 +68,7 @@ pub fn gen_builtin_function(function: &Function) -> String {
     code
 }
 
-pub fn gen_function(function: &Function, app: &App) -> String {
+pub fn gen_function(function: &Function, app: &mut App) -> String {
     let mut code = String::new();
 
     code += &gen_function_sig(function);
@@ -90,7 +93,7 @@ pub fn gen_function_call(call: &FunctionCall) -> String {
 }
 
 /// Make sure the function has a body before calling this function
-fn gen_function_body(function: &Function, app: &App) -> String {
+fn gen_function_body(function: &Function, app: &mut App) -> String {
     let mut code = String::new();
     let body = function.function_body.as_ref().unwrap();
     for node in body {
@@ -133,6 +136,10 @@ fn gen_function_body(function: &Function, app: &App) -> String {
                     code += "return ";
                 }
                 code += &gen_function_call(function_call);
+            }
+            crate::isi::ast::ast::IsiNode::IsiMatchStatement(match_stmt) => {
+                let stmt_code = &gen_match_statement(match_stmt, app);
+                code += stmt_code;
             }
             crate::isi::ast::ast::IsiNode::IsiExpression(expr) => {
                 code += &format!(

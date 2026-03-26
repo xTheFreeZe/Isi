@@ -283,7 +283,7 @@ pub struct MatchPattern {
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct MatchStatement {
-    pub input: Vec<IsiNode>,
+    pub input: Box<IsiNode>,
     pub input_type: DataType,
     pub patterns: Vec<MatchPattern>,
 }
@@ -291,7 +291,7 @@ pub struct MatchStatement {
 impl Default for MatchStatement {
     fn default() -> Self {
         Self {
-            input: Vec::new(),
+            input: Box::new(IsiNode::EmptyNode),
             input_type: DataType::NONE,
             patterns: Default::default(),
         }
@@ -328,6 +328,7 @@ pub struct App {
     pub variable_table: HashMap<Arc<str>, Variable>,
 
     pub generated_code: String,
+    pub unique_counter: u64,
 }
 
 impl App {
@@ -431,5 +432,11 @@ impl App {
     pub fn push_variable_into_map(&mut self, variable: Variable) {
         self.variable_table
             .insert(variable.v_name.clone(), variable);
+    }
+
+    pub fn generate_new_unique_name(&mut self, name: &str) -> String {
+        let new = format!("{}_{}", name, self.unique_counter);
+        self.unique_counter += 1;
+        new
     }
 }

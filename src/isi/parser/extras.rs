@@ -20,9 +20,13 @@ pub fn parse_match(app: &mut App) -> IsiNode {
         print_compile_error("Can not match on a value with type `nil`");
     }
 
+    if input.len() > 1 {
+        print_compile_error("Not a valid match expression");
+    }
+
     let predicted_arms = calculate_match_arms(&head_type);
 
-    match_stmt.input = input;
+    match_stmt.input = Box::new(input[0].clone());
     match_stmt.input_type = input_type;
 
     app.expect(IsiToken::RPAREN);

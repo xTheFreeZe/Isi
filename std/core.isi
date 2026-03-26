@@ -16,4 +16,6 @@ lt    -> c ([x: int y: int] :bool) = $ return x < y; $
 gte   -> c ([x: int y: int] :bool) = $ return x >= y; $
 lte   -> c ([x: int y: int] :bool) = $ return x <= y; $
 
+and -> c ([x: bool y: bool] :bool) = $ return x && y; $
+
 string_len -> c ([s: string] :int) = $ return strlen(s); $

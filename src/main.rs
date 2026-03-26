@@ -30,6 +30,7 @@ fn main() {
         function_sig_table: HashMap::new(),
         variable_table: HashMap::new(),
         generated_code: String::new(),
+        unique_counter: 1,
     };
     let file_name: String = env::args().filter(|arg| arg.ends_with(".isi")).collect();
 
