@@ -1,10 +1,6 @@
 use crate::isi::{
     ast::ast::{App, DataType, IsiNode, IsiToken, MatchPattern, MatchStatement},
-    parser::{
-        expression::{get_expression, parse_expression},
-        parse_function::retrieve_last_data_type,
-        parser::parse_until,
-    },
+    parser::{parse_function::retrieve_last_data_type, parser::parse_until},
     util::util::print_compile_error,
 };
 
@@ -13,15 +9,24 @@ pub fn parse_match(app: &mut App) -> IsiNode {
 
     // Skip the '?'
     app.next();
+    app.expect(IsiToken::LPAREN);
+    app.next();
 
-    let input = get_expression(app);
-    app.index = input.1;
-    let input_expression = parse_expression(app, &input.0);
-    let head_type = evaluate_head_type(&input_expression.e_type);
+    let input = parse_until(app, IsiToken::RPAREN);
+    let input_type = retrieve_last_data_type(&input, app);
+    let head_type = evaluate_head_type(&input_type);
+
+    if input_type == DataType::Nil {
+        print_compile_error("Can not match on a value with type `nil`");
+    }
+
     let predicted_arms = calculate_match_arms(&head_type);
 
-    match_stmt.input = input_expression;
-    match_stmt.input_type = match_stmt.input.e_type;
+    match_stmt.input = input;
+    match_stmt.input_type = input_type;
+
+    app.expect(IsiToken::RPAREN);
+    app.next();
 
     let mut latest_pattern_type = DataType::NONE;
     while app.get().t_type != IsiToken::QUESTION {

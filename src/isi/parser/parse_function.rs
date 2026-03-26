@@ -155,7 +155,7 @@ pub fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
         let token = app.get();
         match token.t_type {
             IsiToken::INTEGER => {
-                let expression = get_expression(app);
+                let expression = get_expression(app, None);
                 let int_expression = parse_expression(app, &expression.0);
                 body.push(IsiNode::IsiExpression(int_expression));
 
@@ -163,7 +163,7 @@ pub fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
                 app.index = expression.1;
             }
             IsiToken::STRING => {
-                let expression = get_expression(app);
+                let expression = get_expression(app, None);
                 let string_expression = parse_expression(app, &expression.0);
                 body.push(IsiNode::IsiExpression(string_expression));
 
@@ -182,7 +182,7 @@ pub fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
                     let variable = parse_variable(app, true);
                     body.push(variable);
                 } else {
-                    let expression = get_expression(app);
+                    let expression = get_expression(app, None);
                     let variable_expression = parse_expression(app, &expression.0);
                     body.push(IsiNode::IsiExpression(variable_expression));
 

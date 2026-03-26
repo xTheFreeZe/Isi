@@ -15,21 +15,47 @@ use prejsx_math::eval_math;
 /// This is usefull as it is now optional to advance the index after gathering the expression
 ///
 /// Sometimes you just want to know what kind of expression lies ahead without moving the index there
-pub fn get_expression(app: &mut App) -> (Vec<Token>, usize) {
+pub fn get_expression(app: &mut App, gather_until: Option<IsiToken>) -> (Vec<Token>, usize) {
     let mut expression: Vec<Token> = Vec::new();
     let old_index = app.index;
     let current_line = app.get().t_line;
     let tokens_len = app.tokens.len();
 
-    while app.get().t_line == current_line {
-        // When we are at the last token of the file, consume it and break the loop
-        if app.index + 1 == tokens_len {
+    if let Some(end) = gather_until {
+        let mut balance = 0;
+        loop {
+            let current_token = app.get();
+
+            if current_token.t_type == IsiToken::LPAREN {
+                balance += 1;
+            } else if current_token.t_type == IsiToken::RPAREN {
+                if end == IsiToken::RPAREN && balance == 0 {
+                    break;
+                }
+                balance -= 1;
+            } else if current_token.t_type == end && balance == 0 {
+                break;
+            }
+
+            expression.push(current_token);
+            app.next();
+
+            if app.index >= tokens_len {
+                break;
+            }
+        }
+    } else {
+        // else, just parse until a new line
+        while app.get().t_line == current_line {
+            // When we are at the last token of the file, consume it and break the loop
+            if app.index + 1 == tokens_len {
+                expression.push(app.get());
+                app.next();
+                break;
+            }
             expression.push(app.get());
             app.next();
-            break;
         }
-        expression.push(app.get());
-        app.next();
     }
 
     let new_index = app.index;

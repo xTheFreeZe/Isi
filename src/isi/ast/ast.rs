@@ -283,7 +283,7 @@ pub struct MatchPattern {
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct MatchStatement {
-    pub input: Expression,
+    pub input: Vec<IsiNode>,
     pub input_type: DataType,
     pub patterns: Vec<MatchPattern>,
 }
@@ -291,7 +291,7 @@ pub struct MatchStatement {
 impl Default for MatchStatement {
     fn default() -> Self {
         Self {
-            input: Expression::default(),
+            input: Vec::new(),
             input_type: DataType::NONE,
             patterns: Default::default(),
         }

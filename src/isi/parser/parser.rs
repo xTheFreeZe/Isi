@@ -122,21 +122,21 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
         // x -> 10
         // This arm is used when you assign a variable a number
         IsiToken::INTEGER => {
-            let expression = get_expression(app);
+            let expression = get_expression(app, None);
             let int_expression = parse_expression(app, &expression.0);
             app.index = expression.1;
             var.v_type = DataType::Int;
             IsiNode::IsiExpression(int_expression)
         }
         IsiToken::STRING => {
-            let expression = get_expression(app);
+            let expression = get_expression(app, None);
             let string_expression = parse_expression(app, &expression.0);
             app.index = expression.1;
             var.v_type = DataType::String;
             IsiNode::IsiExpression(string_expression)
         }
         IsiToken::TRUE | IsiToken::FALSE => {
-            let expression = get_expression(app);
+            let expression = get_expression(app, None);
             let bool_expression = parse_expression(app, &expression.0);
             app.index = expression.1;
             var.v_type = DataType::Bool;
@@ -180,23 +180,23 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
 
 pub fn parse_until(app: &mut App, ttype: IsiToken) -> Vec<IsiNode> {
     let mut nodes = Vec::new();
-    while app.get().t_type != ttype {
+    while app.get().t_type != ttype.clone() {
         let token = app.get();
         match token.t_type {
             IsiToken::INTEGER => {
-                let expression = get_expression(app);
+                let expression = get_expression(app, Some(ttype.clone()));
                 let int_expression = parse_expression(app, &expression.0);
                 nodes.push(IsiNode::IsiExpression(int_expression));
                 app.index = expression.1;
             }
             IsiToken::STRING => {
-                let expression = get_expression(app);
+                let expression = get_expression(app, Some(ttype.clone()));
                 let string_expression = parse_expression(app, &expression.0);
                 nodes.push(IsiNode::IsiExpression(string_expression));
                 app.index = expression.1;
             }
             IsiToken::VARIABLE => {
-                let expression = get_expression(app);
+                let expression = get_expression(app, Some(ttype.clone()));
                 let variable_expression = parse_expression(app, &expression.0);
                 nodes.push(IsiNode::IsiExpression(variable_expression));
 
