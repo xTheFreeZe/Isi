@@ -24,6 +24,7 @@ pub enum IsiToken {
     DQUOTE,   // ""
     COLON,    // :
     DOLLAR,   // $
+    UNDER,    // _
 
     VARIABLE,
     INTEGER,

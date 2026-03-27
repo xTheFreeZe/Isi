@@ -47,13 +47,19 @@ pub fn parse_match(app: &mut App, assign_to_var: bool) -> (IsiNode, DataType) {
     let mut latest_pattern_type = DataType::NONE;
     while app.get().t_type != IsiToken::QUESTION {
         let pattern = app.get();
-        if pattern.t_type.to_data_type() != head_type {
-            print_compile_error(&format!(
-                "Isi Type Error: Arm pattern `{}` with type `{}` does not match the expression type `{}`",
-                &pattern.t_value,
-                &pattern.t_type.to_data_type(),
-                head_type
-            ));
+        let pattern_type;
+        if pattern.t_value.as_ref() != "_" {
+            if pattern.t_type.to_data_type() != head_type {
+                print_compile_error(&format!(
+                    "Isi Type Error: Arm pattern `{}` with type `{}` does not match the expression type `{}`",
+                    &pattern.t_value,
+                    &pattern.t_type.to_data_type(),
+                    head_type
+                ));
+            }
+            pattern_type = pattern.t_type.to_data_type();
+        } else {
+            pattern_type = DataType::Nil;
         }
 
         app.next();
@@ -77,7 +83,7 @@ pub fn parse_match(app: &mut App, assign_to_var: bool) -> (IsiNode, DataType) {
 
         let arm = MatchPattern {
             pattern: pattern.clone(),
-            pattern_type: pattern.t_type.to_data_type(),
+            pattern_type: pattern_type,
             result,
             result_type,
         };
