@@ -27,7 +27,7 @@ pub fn gen_proper_type_code(value: &str, data_type: DataType) -> String {
     }
 }
 
-pub fn generate_node(node: IsiNode, app: &mut App) -> String {
+pub fn generate_node(node: IsiNode, app: &mut App, return_node: bool) -> String {
     let mut code = String::new();
 
     match node {
@@ -61,12 +61,15 @@ pub fn generate_node(node: IsiNode, app: &mut App) -> String {
             code += &gen_function_call(&function_call);
         }
         crate::isi::ast::ast::IsiNode::IsiMatchStatement(match_stmt) => {
-            let stmt_code = &gen_match_statement(&match_stmt, app);
-            code += stmt_code;
+            let stmt_code = &gen_match_statement(&match_stmt, app, false);
+            code += &stmt_code.generated_code;
         }
         crate::isi::ast::ast::IsiNode::IsiExpression(expr) => {
+            if return_node {
+                code += "return";
+            }
             code += &format!(
-                "return {};\n",
+                " {};\n",
                 gen_proper_type_code(expr.e_value.as_ref(), expr.e_type)
             );
         }

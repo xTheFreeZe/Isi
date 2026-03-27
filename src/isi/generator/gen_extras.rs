@@ -4,12 +4,22 @@ use crate::isi::{
     util::util::print_compile_error,
 };
 
-pub fn gen_match_statement(match_stmt: &MatchStatement, app: &mut App) -> String {
+pub struct GeneratedMatchStatement {
+    pub generated_code: String,
+    pub generated_match_var_name: String,
+    pub match_data_type: String,
+}
+
+pub fn gen_match_statement(
+    match_stmt: &MatchStatement,
+    app: &mut App,
+    assign_to_var: bool,
+) -> GeneratedMatchStatement {
     let mut code = String::new();
 
     // TODO: uuugly
     let head = match_stmt.input.clone();
-    let generated_head = &generate_node(*head, app);
+    let generated_head = &generate_node(*head, app, false);
     let head_node_name = app.generate_new_unique_name("_tmp_head_node");
     code += &format!(
         "{} {} = {}",
@@ -17,6 +27,17 @@ pub fn gen_match_statement(match_stmt: &MatchStatement, app: &mut App) -> String
         head_node_name,
         generated_head
     );
+
+    let match_type = match_stmt
+        .patterns
+        .first()
+        .unwrap()
+        .result_type
+        .to_c_string_type();
+    let match_assign_name = app.generate_new_unique_name("_tmp_match_assign");
+    if assign_to_var {
+        code += &format!("{} {}; \n", match_type, match_assign_name);
+    }
 
     for (i, pattern) in match_stmt.patterns.iter().enumerate() {
         let prefix = if i == 0 { "if" } else { "else if" };
@@ -39,9 +60,17 @@ pub fn gen_match_statement(match_stmt: &MatchStatement, app: &mut App) -> String
             print_compile_error("Match results with a length greater than 1 are not yet supported");
         }
 
-        let result_code = generate_node(pattern.result[0].clone(), app);
-        code += &format!("  {result_code} }} ")
+        let result_code = generate_node(pattern.result[0].clone(), app, false);
+        if assign_to_var {
+            code += &format!("  {match_assign_name} = {result_code} }}\n")
+        } else {
+            code += &format!("  {result_code} }}\n ");
+        }
     }
 
-    code
+    GeneratedMatchStatement {
+        generated_code: code,
+        generated_match_var_name: match_assign_name,
+        match_data_type: match_type,
+    }
 }

@@ -138,8 +138,8 @@ fn gen_function_body(function: &Function, app: &mut App) -> String {
                 code += &gen_function_call(function_call);
             }
             crate::isi::ast::ast::IsiNode::IsiMatchStatement(match_stmt) => {
-                let stmt_code = &gen_match_statement(match_stmt, app);
-                code += stmt_code;
+                let stmt_code = &gen_match_statement(match_stmt, app, false);
+                code += &stmt_code.generated_code;
             }
             crate::isi::ast::ast::IsiNode::IsiExpression(expr) => {
                 code += &format!(

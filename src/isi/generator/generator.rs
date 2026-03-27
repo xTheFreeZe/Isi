@@ -1,6 +1,7 @@
 use crate::isi::{
     ast::ast::{App, IsiNode},
     generator::{
+        gen_extras::gen_match_statement,
         gen_function::{gen_builtin_function, gen_function, gen_function_call},
         gen_variable::{gen_function_call_variable, gen_simple_variable},
     },
@@ -46,6 +47,16 @@ pub fn generator(app: &mut App) {
                         main_code +=
                             &gen_function_call_variable(&call, &full_variable.v_name.as_ref())
                     }
+                    IsiNode::IsiMatchStatement(match_stmt) => {
+                        let match_code = gen_match_statement(&match_stmt, app, true);
+                        main_code += &match_code.generated_code;
+                        main_code += &format!(
+                            "{} {} = {}; \n",
+                            match_code.match_data_type,
+                            variable_decl.name.as_ref(),
+                            match_code.generated_match_var_name
+                        )
+                    }
                     _ => {
                         print_compile_error(&format!(
                             "Unknown node in generator: {:#?}",
@@ -57,6 +68,10 @@ pub fn generator(app: &mut App) {
             IsiNode::IsiFunctionCall(function_call) => {
                 let generated_call = gen_function_call(&function_call);
                 main_code += &generated_call;
+            }
+            IsiNode::IsiMatchStatement(match_stmt) => {
+                let generadted_match = gen_match_statement(&match_stmt, app, false);
+                main_code += &generadted_match.generated_code;
             }
             IsiNode::EmptyNode => {
                 app.index += 1;

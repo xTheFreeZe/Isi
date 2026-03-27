@@ -1,20 +1,35 @@
 use crate::isi::{
     ast::ast::{App, DataType, IsiNode, IsiToken, MatchPattern, MatchStatement},
-    parser::{parse_function::retrieve_last_data_type, parser::parse_until},
+    parser::{
+        parse_function::retrieve_last_data_type,
+        parser::{parse_single_node, parse_until},
+    },
     util::util::print_compile_error,
 };
 
-pub fn parse_match(app: &mut App) -> IsiNode {
+pub fn parse_match(app: &mut App, assign_to_var: bool) -> (IsiNode, DataType) {
     let mut match_stmt = MatchStatement::default();
 
     // Skip the '?'
     app.next();
-    app.expect(IsiToken::LPAREN);
-    app.next();
 
-    let input = parse_until(app, IsiToken::RPAREN);
-    let input_type = retrieve_last_data_type(&input, app);
-    let head_type = evaluate_head_type(&input_type);
+    let input: Vec<IsiNode>;
+    let input_type: DataType;
+    let head_type: DataType;
+
+    if app.get().t_type != IsiToken::LPAREN {
+        input = vec![parse_single_node(app.get(), app)];
+        input_type = retrieve_last_data_type(&input, app);
+        head_type = evaluate_head_type(&input_type);
+    } else {
+        app.expect(IsiToken::LPAREN);
+        app.next();
+        input = parse_until(app, IsiToken::RPAREN);
+        input_type = retrieve_last_data_type(&input, app);
+        head_type = evaluate_head_type(&input_type);
+        app.expect(IsiToken::RPAREN);
+        app.next();
+    }
 
     if input_type == DataType::Nil {
         print_compile_error("Can not match on a value with type `nil`");
@@ -28,9 +43,6 @@ pub fn parse_match(app: &mut App) -> IsiNode {
 
     match_stmt.input = Box::new(input[0].clone());
     match_stmt.input_type = input_type;
-
-    app.expect(IsiToken::RPAREN);
-    app.next();
 
     let mut latest_pattern_type = DataType::NONE;
     while app.get().t_type != IsiToken::QUESTION {
@@ -89,7 +101,12 @@ pub fn parse_match(app: &mut App) -> IsiNode {
         }
     }
 
-    IsiNode::IsiMatchStatement(match_stmt)
+    if latest_pattern_type == DataType::Nil && assign_to_var {
+        print_compile_error(
+            "Can not assign match statement to variable, as no arm returns anything",
+        );
+    }
+    (IsiNode::IsiMatchStatement(match_stmt), latest_pattern_type)
 }
 
 /// Calculates the number of match patterns according to the type.

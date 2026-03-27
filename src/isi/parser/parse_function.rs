@@ -194,8 +194,8 @@ pub fn parse_function_body(app: &mut App) -> (Vec<IsiNode>, DataType) {
                 body.push(node.0);
             }
             IsiToken::QUESTION => {
-                let node = parse_match(app);
-                body.push(node);
+                let node = parse_match(app, false);
+                body.push(node.0);
             }
             _ => {
                 print_compile_error(&format!(

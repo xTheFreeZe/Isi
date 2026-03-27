@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::isi::{
-    ast::ast::{App, DataType, IsiNode, IsiToken, Variable, VariableDecl},
+    ast::ast::{App, DataType, IsiNode, IsiToken, Token, Variable, VariableDecl},
     parser::{
         expression::{get_expression, parse_expression},
         extras::parse_match,
@@ -25,8 +25,8 @@ pub fn parse(app: &mut App) {
                 app.nodes.push(node.0);
             }
             IsiToken::QUESTION => {
-                let node = parse_match(app);
-                app.nodes.push(node);
+                let node = parse_match(app, false);
+                app.nodes.push(node.0);
             }
             _ => {
                 print_compile_error(&format!("Unexpected top level token `{}`", token.t_value));
@@ -68,7 +68,7 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
 
     token = app.get();
 
-    let valid_tokens = ["(", "[", "{"];
+    let valid_tokens = ["(", "[", "{", "?"];
 
     // Checks if the token after -> is one of the bracktes above, a number, a string or a function call
     // TODO: Needs to also match Variables
@@ -142,6 +142,11 @@ pub fn parse_variable(app: &mut App, inside_function: bool) -> IsiNode {
             var.v_type = DataType::Bool;
             IsiNode::IsiExpression(bool_expression)
         }
+        IsiToken::QUESTION => {
+            let match_parse = parse_match(app, true);
+            var.v_type = match_parse.1;
+            match_parse.0
+        }
         _ => IsiNode::EmptyNode,
     };
 
@@ -195,6 +200,12 @@ pub fn parse_until(app: &mut App, ttype: IsiToken) -> Vec<IsiNode> {
                 nodes.push(IsiNode::IsiExpression(string_expression));
                 app.index = expression.1;
             }
+            IsiToken::TRUE | IsiToken::FALSE => {
+                let expression = get_expression(app, Some(ttype.clone()));
+                let bool_expression = parse_expression(app, &expression.0);
+                nodes.push(IsiNode::IsiExpression(bool_expression));
+                app.index = expression.1;
+            }
             IsiToken::VARIABLE => {
                 let expression = get_expression(app, Some(ttype.clone()));
                 let variable_expression = parse_expression(app, &expression.0);
@@ -207,8 +218,8 @@ pub fn parse_until(app: &mut App, ttype: IsiToken) -> Vec<IsiNode> {
                 nodes.push(node.0);
             }
             IsiToken::QUESTION => {
-                let node = parse_match(app);
-                nodes.push(node);
+                let node = parse_match(app, false);
+                nodes.push(node.0);
             }
             _ => {
                 print_compile_error(&format!(
@@ -220,4 +231,50 @@ pub fn parse_until(app: &mut App, ttype: IsiToken) -> Vec<IsiNode> {
     }
 
     nodes
+}
+
+pub fn parse_single_node(token: Token, app: &mut App) -> IsiNode {
+    let mut node = IsiNode::EmptyNode;
+    match token.t_type {
+        IsiToken::INTEGER => {
+            let expression = get_expression(app, None);
+            let int_expression = parse_expression(app, &expression.0);
+            node = IsiNode::IsiExpression(int_expression);
+            app.index = expression.1;
+        }
+        IsiToken::STRING => {
+            let expression = get_expression(app, None);
+            let string_expression = parse_expression(app, &expression.0);
+            node = IsiNode::IsiExpression(string_expression);
+            app.index = expression.1;
+        }
+        IsiToken::TRUE | IsiToken::FALSE => {
+            let expression = get_expression(app, None);
+            let bool_expression = parse_expression(app, &expression.0);
+            node = IsiNode::IsiExpression(bool_expression);
+            app.index = expression.1;
+        }
+        IsiToken::VARIABLE => {
+            let expression = get_expression(app, None);
+            let variable_expression = parse_expression(app, &expression.0);
+            node = IsiNode::IsiExpression(variable_expression);
+
+            app.index = expression.1;
+        }
+        IsiToken::LPAREN => {
+            let call_node = parse_call(app);
+            node = call_node.0;
+        }
+        IsiToken::QUESTION => {
+            let match_node = parse_match(app, false);
+            node = match_node.0;
+        }
+        _ => {
+            print_compile_error(&format!(
+                "Unexpected token: `{}` with type `{:?}` [parse_single_node]",
+                token.t_value, token.t_type
+            ));
+        }
+    };
+    node
 }
