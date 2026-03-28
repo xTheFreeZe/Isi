@@ -2,7 +2,7 @@ use std::{process::exit, sync::Arc};
 
 use crate::isi::{
     ast::ast::{App, DataType, FunctionCall, FunctionCallArgument, IsiNode, IsiToken, Token},
-    parser::expression::get_variable,
+    parser::{expression::get_variable, parser::parse_single_node},
     util::util::print_compile_error,
 };
 
@@ -46,10 +46,16 @@ pub fn parse_call(app: &mut App) -> (IsiNode, DataType) {
 
     app.next();
 
-    let mut arguments: Vec<Token> = Vec::new();
+    let mut arguments: Vec<IsiNode> = Vec::new();
     while app.get().t_type != IsiToken::RPAREN {
         let token = app.get();
-        arguments.push(token);
+
+        // Function call: (func (otherFunction))
+        if token.t_type == IsiToken::LPAREN {
+            let call = parse_single_node(token, app);
+            arguments.push(call);
+        }
+
         app.next();
     }
 
@@ -69,30 +75,33 @@ pub fn parse_call(app: &mut App) -> (IsiNode, DataType) {
 
     let mut call_arguments: Vec<FunctionCallArgument> = Vec::new();
     if let Some(params) = &function.params {
-        for (i, a) in arguments.iter().enumerate() {
-            let expected = params[i].p_type;
-            let got: DataType;
-            let mut is_variable = false;
-            if a.t_type == IsiToken::VARIABLE {
-                let var = get_variable(&a.t_value, app);
-                got = var.v_type;
-                is_variable = true;
-            } else {
-                got = a.t_type.to_data_type();
-            }
-            if got != expected {
-                print_compile_error(&format!(
-                    "Expected `{:?}`, found `{:?}` > Parameter `{}` in function `{}`",
-                    expected, got, params[i].name, function.name
-                ));
-            }
-            let call_argument = FunctionCallArgument {
-                name: arguments[i].t_value.clone(),
-                a_type: got,
-                is_variable,
-            };
-            call_arguments.push(call_argument);
-        }
+
+        // TODO: Rewrite this
+
+        // for (i, a) in arguments.iter().enumerate() {
+        //     let expected = params[i].p_type;
+        //     let got: DataType;
+        //     let mut is_variable = false;
+        //     if a.t_type == IsiToken::VARIABLE {
+        //         let var = get_variable(&a.t_value, app);
+        //         got = var.v_type;
+        //         is_variable = true;
+        //     } else {
+        //         got = a.t_type.to_data_type();
+        //     }
+        //     if got != expected {
+        //         print_compile_error(&format!(
+        //             "Expected `{:?}`, found `{:?}` > Parameter `{}` in function `{}`",
+        //             expected, got, params[i].name, function.name
+        //         ));
+        //     }
+        //     let call_argument = FunctionCallArgument {
+        //         name: arguments[i].t_value.clone(),
+        //         a_type: got,
+        //         is_variable,
+        //     };
+        //     call_arguments.push(call_argument);
+        // }
     }
 
     if !call_arguments.is_empty() {

@@ -117,9 +117,19 @@ fn gen_function_body(function: &Function, app: &mut App) -> String {
                             call_code
                         );
                     }
+                    crate::isi::ast::ast::IsiNode::IsiMatchStatement(match_stmt) => {
+                        let match_code = gen_match_statement(&match_stmt, app, true);
+                        code += &match_code.generated_code;
+                        code += &format!(
+                            "{} {} = {}; \n",
+                            match_code.match_data_type,
+                            var_decl.name.as_ref(),
+                            match_code.generated_match_var_name
+                        )
+                    }
                     _ => {
                         print_compile_error(&format!(
-                            "Unknown node in body of variable [currently in variable {}]: {:#?}",
+                            "Gen error: Unknown node in body of variable [currently in variable {}]: {:#?}",
                             full.v_name.as_ref(),
                             node,
                         ));
